@@ -9,6 +9,8 @@ import {
   BarChart3,
   Target,
   ChevronRight,
+  Database,
+  BookOpen,
 } from "lucide-react";
 
 const navItems = [
@@ -17,6 +19,16 @@ const navItems = [
   { href: "/departments", label: "部署管理", icon: Building2 },
   { href: "/skills", label: "スキルマトリックス", icon: BarChart3 },
   { href: "/strategy", label: "戦略インサイト", icon: Target },
+];
+
+const masterItems = [
+  { href: "/master/departments", label: "部署マスタ" },
+  { href: "/master/skills", label: "スキルマスタ" },
+  { href: "/master/employees", label: "スタッフマスタ" },
+];
+
+const utilItems = [
+  { href: "/manual", label: "マニュアル", icon: BookOpen },
 ];
 
 export default function Sidebar() {
@@ -36,8 +48,53 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                active
+                  ? "bg-indigo-600 text-white"
+                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
+              }`}
+            >
+              <Icon size={18} />
+              <span className="flex-1">{label}</span>
+              {active && <ChevronRight size={14} />}
+            </Link>
+          );
+        })}
+
+        <div className="pt-3 pb-1 px-3">
+          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium uppercase tracking-wider">
+            <Database size={14} />
+            マスタ管理
+          </div>
+        </div>
+        {masterItems.map(({ href, label }) => {
+          const active = pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                active
+                  ? "bg-indigo-600 text-white"
+                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
+              }`}
+            >
+              <span className="w-[18px]" />
+              <span className="flex-1">{label}</span>
+              {active && <ChevronRight size={14} />}
+            </Link>
+          );
+        })}
+
+        <div className="pt-3" />
+        {utilItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
           return (
             <Link
