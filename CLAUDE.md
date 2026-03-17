@@ -69,10 +69,21 @@ active（在籍）、onLeave（休職中）、remote（リモート）
 - Supabase未設定の場合、マスタ管理ページでエラーが出る（既存ページはモックデータで動作）
 - 日本語UI（全テキスト日本語）
 
-## 今後の拡張予定
-- [ ] Supabase Auth による認証・ログイン機能
-- [ ] ページ別・部署別の閲覧権限管理（RLSポリシー変更）
+## 今後の拡張予定（優先度順）
+
+### 直近タスク
+- [ ] ログイン画面の作成（Supabase Auth UI）
+- [ ] ユーザー認証の実装（Supabase Auth + ミドルウェアによるルート保護）
+- [ ] UIの調整（レスポンシブ対応・デザイン改善）
+
+### 次フェーズ
+- [ ] ページ別・部署別の閲覧権限管理（RLSポリシーをauth.uid()ベースに変更）
 - [ ] 既存ページのSupabase連携（モックデータからの移行）
 - [ ] 従業員スキル・パフォーマンスの一括編集
 - [ ] CSVインポート/エクスポート
 - [ ] 1on1フィードバック・エンゲージメント調査
+
+## デプロイ
+- **ホスティング**: Vercel（GitHub連携で自動デプロイ）
+- **環境変数**: Vercelダッシュボードで NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY を設定済み
+- **Supabase**: プロジェクトRef: veihgwwmrnmyohzbcsjz
