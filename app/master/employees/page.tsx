@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { Plus, Pencil, Trash2, Save, X, Search } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { Plus, Pencil, Trash2, Save, X, Search, AlertTriangle, RefreshCw } from "lucide-react";
 
 type Department = { id: string; name: string };
 
@@ -45,30 +45,55 @@ export default function EmployeesMasterPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [connectionError, setConnectionError] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
-    const [empRes, deptRes] = await Promise.all([
-      supabase
-        .from("employees")
-        .select("*, departments(name)")
-        .order("created_at"),
-      supabase.from("departments").select("id, name").order("name"),
-    ]);
-    if (empRes.error) setError(empRes.error.message);
-    else setEmployees(empRes.data || []);
-    if (deptRes.error) setError(deptRes.error.message);
-    else setDepartments(deptRes.data || []);
+    setConnectionError(false);
+    try {
+      const [empRes, deptRes] = await Promise.all([
+        supabase
+          .from("employees")
+          .select("*, departments(name)")
+          .order("created_at"),
+        supabase.from("departments").select("id, name").order("name"),
+      ]);
+      if (empRes.error) {
+        setError(empRes.error.message);
+        if (empRes.error.message.includes("fetch") || empRes.error.code === "PGRST301") {
+          setConnectionError(true);
+        }
+      } else {
+        setEmployees(empRes.data || []);
+      }
+      if (deptRes.error) {
+        setError(deptRes.error.message);
+      } else {
+        setDepartments(deptRes.data || []);
+      }
+      if (!empRes.error && !deptRes.error) setError("");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "データの取得に失敗しました";
+      setError(msg);
+      setConnectionError(true);
+    }
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setError("Supabaseの環境変数が設定されていません。.env.local を確認してください。");
+      setConnectionError(true);
+      setLoading(false);
+      return;
+    }
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleSave = async () => {
     setError("");
@@ -77,65 +102,66 @@ export default function EmployeesMasterPage() {
       return;
     }
 
-    const payload = {
-      name: form.name,
-      name_kana: form.name_kana,
-      role: form.role,
-      department_id: form.department_id || null,
-      grade: form.grade,
-      join_date: form.join_date || null,
-      email: form.email,
-      avatar: form.avatar || form.name.charAt(0),
-      status: form.status,
-    };
+    setSaving(true);
+    try {
+      const payload = {
+        name: form.name,
+        name_kana: form.name_kana,
+        role: form.role,
+        department_id: form.department_id || null,
+        grade: form.grade,
+        join_date: form.join_date || null,
+        email: form.email,
+        avatar: form.avatar || form.name.charAt(0) || "?",
+        status: form.status,
+      };
 
-    if (editingId) {
-      const { error } = await supabase
-        .from("employees")
-        .update(payload)
-        .eq("id", editingId);
-      if (error) {
-        setError(error.message);
-        return;
+      if (editingId) {
+        const { error } = await supabase
+          .from("employees")
+          .update(payload)
+          .eq("id", editingId);
+        if (error) { setError(error.message); setSaving(false); return; }
+      } else {
+        const { error } = await supabase.from("employees").insert(payload);
+        if (error) { setError(error.message); setSaving(false); return; }
       }
-    } else {
-      const { error } = await supabase.from("employees").insert(payload);
-      if (error) {
-        setError(error.message);
-        return;
-      }
+
+      setEditingId(null);
+      setIsAdding(false);
+      setForm(emptyForm);
+      fetchData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存に失敗しました");
     }
-
-    setEditingId(null);
-    setIsAdding(false);
-    setForm(emptyForm);
-    fetchData();
+    setSaving(false);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("この従業員を削除しますか？関連データも削除されます。"))
+    if (!confirm("この従業員を削除しますか？関連データ（スキル・パフォーマンス等）も削除されます。"))
       return;
-    const { error } = await supabase.from("employees").delete().eq("id", id);
-    if (error) {
-      setError(error.message);
-      return;
+    try {
+      const { error } = await supabase.from("employees").delete().eq("id", id);
+      if (error) { setError(error.message); return; }
+      fetchData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "削除に失敗しました");
     }
-    fetchData();
   };
 
   const startEdit = (emp: Employee) => {
     setEditingId(emp.id);
     setIsAdding(false);
     setForm({
-      name: emp.name,
-      name_kana: emp.name_kana,
-      role: emp.role,
+      name: emp.name ?? "",
+      name_kana: emp.name_kana ?? "",
+      role: emp.role ?? "",
       department_id: emp.department_id || "",
-      grade: emp.grade,
+      grade: emp.grade ?? "J1",
       join_date: emp.join_date || "",
-      email: emp.email,
-      avatar: emp.avatar,
-      status: emp.status,
+      email: emp.email ?? "",
+      avatar: emp.avatar ?? "",
+      status: emp.status ?? "active",
     });
   };
 
@@ -146,13 +172,16 @@ export default function EmployeesMasterPage() {
     setError("");
   };
 
-  const filtered = employees.filter(
-    (emp) =>
-      emp.name.includes(searchQuery) ||
-      emp.name_kana.includes(searchQuery) ||
-      emp.role.includes(searchQuery) ||
-      emp.email.includes(searchQuery)
-  );
+  const filtered = employees.filter((emp) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      (emp.name ?? "").toLowerCase().includes(q) ||
+      (emp.name_kana ?? "").toLowerCase().includes(q) ||
+      (emp.role ?? "").toLowerCase().includes(q) ||
+      (emp.email ?? "").toLowerCase().includes(q)
+    );
+  });
 
   const statusBadge = (status: string) => {
     const map: Record<string, string> = {
@@ -167,12 +196,38 @@ export default function EmployeesMasterPage() {
     };
     return (
       <span
-        className={`px-2 py-0.5 rounded-full text-xs font-medium ${map[status] || ""}`}
+        className={`px-2 py-0.5 rounded-full text-xs font-medium ${map[status] || "bg-gray-100 text-gray-800"}`}
       >
-        {labelMap[status] || status}
+        {labelMap[status] || status || "-"}
       </span>
     );
   };
+
+  if (connectionError) {
+    return (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold mb-6">スタッフマスタ管理</h1>
+        <div className="p-6 bg-amber-50 border border-amber-200 rounded-xl">
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={24} className="text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h2 className="font-semibold text-amber-800 mb-2">Supabaseに接続できません</h2>
+              <p className="text-sm text-amber-700 mb-3">{error}</p>
+              <ul className="text-sm text-amber-700 space-y-1 mb-4">
+                <li>1. .env.local に NEXT_PUBLIC_SUPABASE_URL を設定済みか</li>
+                <li>2. .env.local に NEXT_PUBLIC_SUPABASE_ANON_KEY を設定済みか</li>
+                <li>3. Supabase ダッシュボードで migration.sql を実行済みか</li>
+                <li>4. 開発サーバーを再起動したか（env変更後は必要）</li>
+              </ul>
+              <button onClick={fetchData} className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm">
+                <RefreshCw size={16} /> 再接続
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -357,10 +412,11 @@ export default function EmployeesMasterPage() {
           <div className="flex gap-2 mt-4">
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              disabled={saving}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save size={16} />
-              保存
+              {saving ? "保存中..." : "保存"}
             </button>
             <button
               onClick={cancelEdit}
@@ -418,21 +474,21 @@ export default function EmployeesMasterPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold">
-                        {emp.avatar}
+                        {emp.avatar || (emp.name ? emp.name.charAt(0) : "?")}
                       </div>
                       <div>
-                        <div className="font-medium">{emp.name}</div>
+                        <div className="font-medium">{emp.name || "-"}</div>
                         <div className="text-xs text-gray-400">
-                          {emp.name_kana}
+                          {emp.name_kana || ""}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm">{emp.role}</td>
+                  <td className="px-4 py-3 text-sm">{emp.role || "-"}</td>
                   <td className="px-4 py-3 text-sm">
                     {emp.departments?.name || "-"}
                   </td>
-                  <td className="px-4 py-3 text-sm">{emp.grade}</td>
+                  <td className="px-4 py-3 text-sm">{emp.grade || "-"}</td>
                   <td className="px-4 py-3">{statusBadge(emp.status)}</td>
                   <td className="px-4 py-3 text-sm text-gray-600">
                     {emp.join_date || "-"}
