@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { Plus, Pencil, Trash2, Save, X } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { Plus, Pencil, Trash2, Save, X, AlertTriangle, RefreshCw } from "lucide-react";
 
 type Department = {
   id: string;
@@ -30,24 +30,43 @@ export default function DepartmentsMasterPage() {
   const [form, setForm] = useState<Omit<Department, "id">>(emptyDept);
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [connectionError, setConnectionError] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("departments")
-      .select("*")
-      .order("created_at");
-    if (error) {
-      setError(error.message);
-    } else {
-      setDepartments(data || []);
+    setConnectionError(false);
+    try {
+      const { data, error } = await supabase
+        .from("departments")
+        .select("*")
+        .order("created_at");
+      if (error) {
+        setError(error.message);
+        if (error.message.includes("fetch") || error.message.includes("network") || error.code === "PGRST301") {
+          setConnectionError(true);
+        }
+      } else {
+        setDepartments(data || []);
+        setError("");
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "データの取得に失敗しました";
+      setError(msg);
+      setConnectionError(true);
     }
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setError("Supabaseの環境変数が設定されていません。.env.local を確認してください。");
+      setConnectionError(true);
+      setLoading(false);
+      return;
+    }
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleSave = async () => {
     setError("");
@@ -56,49 +75,65 @@ export default function DepartmentsMasterPage() {
       return;
     }
 
-    if (editingId) {
-      const { error } = await supabase
-        .from("departments")
-        .update(form)
-        .eq("id", editingId);
-      if (error) {
-        setError(error.message);
-        return;
+    setSaving(true);
+    try {
+      if (editingId) {
+        const { error } = await supabase
+          .from("departments")
+          .update(form)
+          .eq("id", editingId);
+        if (error) {
+          setError(error.message);
+          setSaving(false);
+          return;
+        }
+      } else {
+        const { error } = await supabase.from("departments").insert(form);
+        if (error) {
+          setError(
+            error.code === "23505"
+              ? "同じ名前の部署が既に存在します"
+              : error.message
+          );
+          setSaving(false);
+          return;
+        }
       }
-    } else {
-      const { error } = await supabase.from("departments").insert(form);
-      if (error) {
-        setError(error.message);
-        return;
-      }
-    }
 
-    setEditingId(null);
-    setIsAdding(false);
-    setForm(emptyDept);
-    fetchData();
+      setEditingId(null);
+      setIsAdding(false);
+      setForm(emptyDept);
+      fetchData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存に失敗しました");
+    }
+    setSaving(false);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("この部署を削除しますか？")) return;
-    const { error } = await supabase.from("departments").delete().eq("id", id);
-    if (error) {
-      setError(error.message);
-      return;
+    if (!confirm("この部署を削除しますか？所属する従業員の部署が未所属になります。")) return;
+    try {
+      const { error } = await supabase.from("departments").delete().eq("id", id);
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      fetchData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "削除に失敗しました");
     }
-    fetchData();
   };
 
   const startEdit = (dept: Department) => {
     setEditingId(dept.id);
     setIsAdding(false);
     setForm({
-      name: dept.name,
-      head: dept.head,
-      head_count: dept.head_count,
-      budget: dept.budget,
-      description: dept.description,
-      color: dept.color,
+      name: dept.name ?? "",
+      head: dept.head ?? "",
+      head_count: dept.head_count ?? 0,
+      budget: dept.budget ?? 0,
+      description: dept.description ?? "",
+      color: dept.color ?? "#6366f1",
     });
   };
 
@@ -108,6 +143,39 @@ export default function DepartmentsMasterPage() {
     setForm(emptyDept);
     setError("");
   };
+
+  if (connectionError) {
+    return (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold mb-6">部署マスタ管理</h1>
+        <div className="p-6 bg-amber-50 border border-amber-200 rounded-xl">
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={24} className="text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h2 className="font-semibold text-amber-800 mb-2">Supabaseに接続できません</h2>
+              <p className="text-sm text-amber-700 mb-3">{error}</p>
+              <p className="text-sm text-amber-600 mb-4">
+                以下を確認してください:
+              </p>
+              <ul className="text-sm text-amber-700 space-y-1 mb-4">
+                <li>1. .env.local に NEXT_PUBLIC_SUPABASE_URL を設定済みか</li>
+                <li>2. .env.local に NEXT_PUBLIC_SUPABASE_ANON_KEY を設定済みか</li>
+                <li>3. Supabase ダッシュボードで migration.sql を実行済みか</li>
+                <li>4. 開発サーバーを再起動したか（env変更後は必要）</li>
+              </ul>
+              <button
+                onClick={fetchData}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm"
+              >
+                <RefreshCw size={16} />
+                再接続
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -174,7 +242,7 @@ export default function DepartmentsMasterPage() {
                 type="number"
                 value={form.head_count}
                 onChange={(e) =>
-                  setForm({ ...form, head_count: Number(e.target.value) })
+                  setForm({ ...form, head_count: Number(e.target.value) || 0 })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
@@ -187,7 +255,7 @@ export default function DepartmentsMasterPage() {
                 type="number"
                 value={form.budget}
                 onChange={(e) =>
-                  setForm({ ...form, budget: Number(e.target.value) })
+                  setForm({ ...form, budget: Number(e.target.value) || 0 })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
@@ -224,10 +292,11 @@ export default function DepartmentsMasterPage() {
           <div className="flex gap-2 mt-4">
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              disabled={saving}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save size={16} />
-              保存
+              {saving ? "保存中..." : "保存"}
             </button>
             <button
               onClick={cancelEdit}
@@ -283,19 +352,19 @@ export default function DepartmentsMasterPage() {
                   <td className="px-4 py-3">
                     <div
                       className="w-6 h-6 rounded"
-                      style={{ backgroundColor: dept.color }}
+                      style={{ backgroundColor: dept.color || "#ccc" }}
                     />
                   </td>
-                  <td className="px-4 py-3 font-medium">{dept.name}</td>
+                  <td className="px-4 py-3 font-medium">{dept.name || "-"}</td>
                   <td className="px-4 py-3 text-sm text-gray-600">
-                    {dept.head}
+                    {dept.head || "-"}
                   </td>
-                  <td className="px-4 py-3 text-sm">{dept.head_count}人</td>
+                  <td className="px-4 py-3 text-sm">{dept.head_count ?? 0}人</td>
                   <td className="px-4 py-3 text-sm">
-                    {(dept.budget / 10000).toLocaleString()}万円
+                    {((dept.budget ?? 0) / 10000).toLocaleString()}万円
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
-                    {dept.description}
+                    {dept.description || "-"}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">

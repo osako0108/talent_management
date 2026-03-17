@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { Plus, Pencil, Trash2, Save, X, Tag } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { Plus, Pencil, Trash2, Save, X, Tag, AlertTriangle, RefreshCw } from "lucide-react";
 
 type SkillCategory = {
   id: string;
@@ -13,7 +13,7 @@ type SkillMaster = {
   id: string;
   name: string;
   category_id: string;
-  skill_categories?: { name: string };
+  skill_categories?: { name: string } | null;
 };
 
 export default function SkillsMasterPage() {
@@ -21,6 +21,7 @@ export default function SkillsMasterPage() {
   const [skills, setSkills] = useState<SkillMaster[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [connectionError, setConnectionError] = useState(false);
 
   // Category form
   const [catFormOpen, setCatFormOpen] = useState(false);
@@ -32,29 +33,53 @@ export default function SkillsMasterPage() {
   const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
   const [skillName, setSkillName] = useState("");
   const [skillCategoryId, setSkillCategoryId] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // Filter
   const [filterCategoryId, setFilterCategoryId] = useState("");
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
-    const [catRes, skillRes] = await Promise.all([
-      supabase.from("skill_categories").select("*").order("name"),
-      supabase
-        .from("skill_masters")
-        .select("*, skill_categories(name)")
-        .order("name"),
-    ]);
-    if (catRes.error) setError(catRes.error.message);
-    else setCategories(catRes.data || []);
-    if (skillRes.error) setError(skillRes.error.message);
-    else setSkills(skillRes.data || []);
+    setConnectionError(false);
+    try {
+      const [catRes, skillRes] = await Promise.all([
+        supabase.from("skill_categories").select("*").order("name"),
+        supabase
+          .from("skill_masters")
+          .select("*, skill_categories(name)")
+          .order("name"),
+      ]);
+      if (catRes.error) {
+        setError(catRes.error.message);
+        if (catRes.error.message.includes("fetch") || catRes.error.code === "PGRST301") {
+          setConnectionError(true);
+        }
+      } else {
+        setCategories(catRes.data || []);
+      }
+      if (skillRes.error) {
+        setError(skillRes.error.message);
+      } else {
+        setSkills(skillRes.data || []);
+      }
+      if (!catRes.error && !skillRes.error) setError("");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "データの取得に失敗しました";
+      setError(msg);
+      setConnectionError(true);
+    }
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setError("Supabaseの環境変数が設定されていません。.env.local を確認してください。");
+      setConnectionError(true);
+      setLoading(false);
+      return;
+    }
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   // Category CRUD
   const saveCategory = async () => {
@@ -63,42 +88,47 @@ export default function SkillsMasterPage() {
       setError("カテゴリ名は必須です");
       return;
     }
-    if (editingCatId) {
-      const { error } = await supabase
-        .from("skill_categories")
-        .update({ name: catName })
-        .eq("id", editingCatId);
-      if (error) {
-        setError(error.message);
-        return;
+    setSaving(true);
+    try {
+      if (editingCatId) {
+        const { error } = await supabase
+          .from("skill_categories")
+          .update({ name: catName })
+          .eq("id", editingCatId);
+        if (error) { setError(error.message); setSaving(false); return; }
+      } else {
+        const { error } = await supabase
+          .from("skill_categories")
+          .insert({ name: catName });
+        if (error) {
+          setError(error.code === "23505" ? "同じ名前のカテゴリが既に存在します" : error.message);
+          setSaving(false);
+          return;
+        }
       }
-    } else {
-      const { error } = await supabase
-        .from("skill_categories")
-        .insert({ name: catName });
-      if (error) {
-        setError(error.message);
-        return;
-      }
+      setCatFormOpen(false);
+      setEditingCatId(null);
+      setCatName("");
+      fetchData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存に失敗しました");
     }
-    setCatFormOpen(false);
-    setEditingCatId(null);
-    setCatName("");
-    fetchData();
+    setSaving(false);
   };
 
   const deleteCategory = async (id: string) => {
     if (!confirm("このカテゴリと紐づくスキルも削除されます。よろしいですか？"))
       return;
-    const { error } = await supabase
-      .from("skill_categories")
-      .delete()
-      .eq("id", id);
-    if (error) {
-      setError(error.message);
-      return;
+    try {
+      const { error } = await supabase
+        .from("skill_categories")
+        .delete()
+        .eq("id", id);
+      if (error) { setError(error.message); return; }
+      fetchData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "削除に失敗しました");
     }
-    fetchData();
   };
 
   // Skill CRUD
@@ -112,46 +142,77 @@ export default function SkillsMasterPage() {
       setError("カテゴリを選択してください");
       return;
     }
-    const payload = { name: skillName, category_id: skillCategoryId };
-    if (editingSkillId) {
-      const { error } = await supabase
-        .from("skill_masters")
-        .update(payload)
-        .eq("id", editingSkillId);
-      if (error) {
-        setError(error.message);
-        return;
+    setSaving(true);
+    try {
+      const payload = { name: skillName, category_id: skillCategoryId };
+      if (editingSkillId) {
+        const { error } = await supabase
+          .from("skill_masters")
+          .update(payload)
+          .eq("id", editingSkillId);
+        if (error) { setError(error.message); setSaving(false); return; }
+      } else {
+        const { error } = await supabase.from("skill_masters").insert(payload);
+        if (error) {
+          setError(error.code === "23505" ? "同じカテゴリ内に同名のスキルが既に存在します" : error.message);
+          setSaving(false);
+          return;
+        }
       }
-    } else {
-      const { error } = await supabase.from("skill_masters").insert(payload);
-      if (error) {
-        setError(error.message);
-        return;
-      }
+      setSkillFormOpen(false);
+      setEditingSkillId(null);
+      setSkillName("");
+      setSkillCategoryId("");
+      fetchData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存に失敗しました");
     }
-    setSkillFormOpen(false);
-    setEditingSkillId(null);
-    setSkillName("");
-    setSkillCategoryId("");
-    fetchData();
+    setSaving(false);
   };
 
   const deleteSkill = async (id: string) => {
     if (!confirm("このスキルを削除しますか？")) return;
-    const { error } = await supabase
-      .from("skill_masters")
-      .delete()
-      .eq("id", id);
-    if (error) {
-      setError(error.message);
-      return;
+    try {
+      const { error } = await supabase
+        .from("skill_masters")
+        .delete()
+        .eq("id", id);
+      if (error) { setError(error.message); return; }
+      fetchData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "削除に失敗しました");
     }
-    fetchData();
   };
 
   const filteredSkills = filterCategoryId
     ? skills.filter((s) => s.category_id === filterCategoryId)
     : skills;
+
+  if (connectionError) {
+    return (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold mb-6">スキルマスタ管理</h1>
+        <div className="p-6 bg-amber-50 border border-amber-200 rounded-xl">
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={24} className="text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h2 className="font-semibold text-amber-800 mb-2">Supabaseに接続できません</h2>
+              <p className="text-sm text-amber-700 mb-3">{error}</p>
+              <ul className="text-sm text-amber-700 space-y-1 mb-4">
+                <li>1. .env.local に NEXT_PUBLIC_SUPABASE_URL を設定済みか</li>
+                <li>2. .env.local に NEXT_PUBLIC_SUPABASE_ANON_KEY を設定済みか</li>
+                <li>3. Supabase ダッシュボードで migration.sql を実行済みか</li>
+                <li>4. 開発サーバーを再起動したか（env変更後は必要）</li>
+              </ul>
+              <button onClick={fetchData} className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm">
+                <RefreshCw size={16} /> 再接続
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -204,10 +265,11 @@ export default function SkillsMasterPage() {
             </div>
             <button
               onClick={saveCategory}
-              className="flex items-center gap-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm"
+              disabled={saving}
+              className="flex items-center gap-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm disabled:opacity-50"
             >
               <Save size={16} />
-              保存
+              {saving ? "保存中..." : "保存"}
             </button>
             <button
               onClick={() => {
@@ -223,32 +285,38 @@ export default function SkillsMasterPage() {
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2">
-          {categories.map((cat) => (
-            <div
-              key={cat.id}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm"
-            >
-              <span>{cat.name}</span>
-              <button
-                onClick={() => {
-                  setCatFormOpen(true);
-                  setEditingCatId(cat.id);
-                  setCatName(cat.name);
-                }}
-                className="p-0.5 text-gray-400 hover:text-indigo-600"
+        {loading ? (
+          <div className="text-gray-400 text-sm">読み込み中...</div>
+        ) : categories.length === 0 ? (
+          <div className="text-gray-400 text-sm">カテゴリが登録されていません</div>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <div
+                key={cat.id}
+                className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm"
               >
-                <Pencil size={12} />
-              </button>
-              <button
-                onClick={() => deleteCategory(cat.id)}
-                className="p-0.5 text-gray-400 hover:text-red-600"
-              >
-                <Trash2 size={12} />
-              </button>
-            </div>
-          ))}
-        </div>
+                <span>{cat.name || "(名称なし)"}</span>
+                <button
+                  onClick={() => {
+                    setCatFormOpen(true);
+                    setEditingCatId(cat.id);
+                    setCatName(cat.name ?? "");
+                  }}
+                  className="p-0.5 text-gray-400 hover:text-indigo-600"
+                >
+                  <Pencil size={12} />
+                </button>
+                <button
+                  onClick={() => deleteCategory(cat.id)}
+                  className="p-0.5 text-gray-400 hover:text-red-600"
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Skills Section */}
@@ -319,10 +387,11 @@ export default function SkillsMasterPage() {
               </div>
               <button
                 onClick={saveSkill}
-                className="flex items-center gap-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm"
+                disabled={saving}
+                className="flex items-center gap-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm disabled:opacity-50"
               >
                 <Save size={16} />
-                保存
+                {saving ? "保存中..." : "保存"}
               </button>
               <button
                 onClick={() => {
@@ -366,10 +435,10 @@ export default function SkillsMasterPage() {
                     key={skill.id}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
-                    <td className="px-4 py-3 font-medium">{skill.name}</td>
+                    <td className="px-4 py-3 font-medium">{skill.name || "-"}</td>
                     <td className="px-4 py-3 text-sm">
                       <span className="px-2 py-1 bg-gray-100 rounded-full text-gray-600">
-                        {skill.skill_categories?.name || ""}
+                        {skill.skill_categories?.name || "(未分類)"}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -378,8 +447,8 @@ export default function SkillsMasterPage() {
                           onClick={() => {
                             setSkillFormOpen(true);
                             setEditingSkillId(skill.id);
-                            setSkillName(skill.name);
-                            setSkillCategoryId(skill.category_id);
+                            setSkillName(skill.name ?? "");
+                            setSkillCategoryId(skill.category_id ?? "");
                           }}
                           className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
                           title="編集"
