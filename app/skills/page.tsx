@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { employees, departments, skillCategories } from "@/lib/data";
+import { useAppData } from "@/lib/useAppData";
 
 const LEVEL_LABELS = ["", "入門", "基礎", "中級", "上級", "エキスパート"];
 const LEVEL_BG = [
@@ -14,6 +14,7 @@ const LEVEL_BG = [
 ];
 
 export default function SkillsPage() {
+  const { employees, departments, skillCategories, loading } = useAppData();
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [deptFilter, setDeptFilter] = useState("all");
   const [minLevel, setMinLevel] = useState(1);
@@ -43,7 +44,7 @@ export default function SkillsPage() {
       maxLevel: Math.max(...data.holders.map((h) => h.level)),
       count: data.holders.length,
     }));
-  }, []);
+  }, [employees]);
 
   const filtered = useMemo(
     () =>
@@ -65,6 +66,14 @@ export default function SkillsPage() {
       ? employees
       : employees.filter((e) => e.department === deptFilter);
   const matrixSkills = filtered.slice(0, 15); // 表示スキル数を制限
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center h-64">
+        <p className="text-gray-500 dark:text-gray-400">読み込み中...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">

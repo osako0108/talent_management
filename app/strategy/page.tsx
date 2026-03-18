@@ -14,7 +14,7 @@
  *   projects テーブルから集計する設計が最適
  */
 
-import { employees, departments } from "@/lib/data";
+import { useAppData } from "@/lib/useAppData";
 import {
   BarChart,
   Bar,
@@ -33,6 +33,16 @@ import {
 import { AlertTriangle, TrendingUp, Users, Clock } from "lucide-react";
 
 export default function StrategyPage() {
+  const { employees, departments, loading } = useAppData();
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center h-64">
+        <p className="text-gray-500 dark:text-gray-400">読み込み中...</p>
+      </div>
+    );
+  }
+
   // --- 在籍年数計算 ---
   const today = new Date("2026-03-17");
   const empWithTenure = employees.map((e) => {

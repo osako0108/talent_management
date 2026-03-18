@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { employees, departments, statusLabels, statusColors } from "@/lib/data";
+import { useAppData } from "@/lib/useAppData";
+import { statusLabels, statusColors } from "@/lib/data";
 import Link from "next/link";
 import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, X } from "lucide-react";
 
@@ -90,6 +91,7 @@ function MultiSelectDropdown({
 }
 
 export default function EmployeesPage() {
+  const { employees, departments, loading } = useAppData();
   const [search, setSearch] = useState("");
   const [deptFilters, setDeptFilters] = useState<string[]>([]);
   const [statusFilters, setStatusFilters] = useState<string[]>([]);
@@ -176,6 +178,14 @@ export default function EmployeesPage() {
   const gradeOptions = grades.map((g) => ({ value: g, label: g }));
 
   const activeFilterCount = deptFilters.length + statusFilters.length + gradeFilters.length;
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center h-64">
+        <p className="text-gray-500 dark:text-gray-400">読み込み中...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-5">
