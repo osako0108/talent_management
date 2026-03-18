@@ -203,3 +203,49 @@ INSERT INTO roles (name, description) VALUES
   ('プロダクトマネージャー', 'プロダクト管理'),
   ('UXデザイナー', 'UXデザイン')
 ON CONFLICT (name) DO NOTHING;
+
+-- ========================================
+-- グレードマスタ
+-- ========================================
+CREATE TABLE IF NOT EXISTS grades (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  code TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  rank_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE grades ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all on grades" ON grades FOR ALL USING (true) WITH CHECK (true);
+
+INSERT INTO grades (code, name, rank_order) VALUES
+  ('J1', 'ジュニア1', 1),
+  ('J2', 'ジュニア2', 2),
+  ('J3', 'ジュニア3', 3),
+  ('S1', 'シニア1', 4),
+  ('S2', 'シニア2', 5),
+  ('M1', 'マネージャー1', 6),
+  ('M2', 'マネージャー2', 7),
+  ('M3', 'マネージャー3', 8),
+  ('M4', 'マネージャー4（役員）', 9)
+ON CONFLICT (code) DO NOTHING;
+
+-- ========================================
+-- ステータスマスタ
+-- ========================================
+CREATE TABLE IF NOT EXISTS statuses (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  code TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  color TEXT DEFAULT '#6b7280',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE statuses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all on statuses" ON statuses FOR ALL USING (true) WITH CHECK (true);
+
+INSERT INTO statuses (code, name, color) VALUES
+  ('active', '在籍', '#22c55e'),
+  ('onLeave', '休職中', '#eab308'),
+  ('remote', 'リモート', '#3b82f6')
+ON CONFLICT (code) DO NOTHING;
