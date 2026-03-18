@@ -116,14 +116,14 @@ export default function ManualPage() {
     <div className="p-8 max-w-4xl">
       <div className="flex items-center gap-3 mb-2">
         <BookOpen size={28} className="text-indigo-600" />
-        <h1 className="text-2xl font-bold">操作マニュアル</h1>
+        <h1 className="text-2xl font-bold dark:text-gray-100">操作マニュアル</h1>
       </div>
-      <p className="text-gray-500 mb-8">
+      <p className="text-gray-500 dark:text-gray-400 mb-8">
         TalentOS の各機能と操作方法について説明します。
       </p>
 
       {/* Feature Sections */}
-      <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+      <h2 className="text-xl font-bold mb-4 flex items-center gap-2 dark:text-gray-100">
         <HelpCircle size={20} />
         各機能の説明
       </h2>
@@ -133,20 +133,20 @@ export default function ManualPage() {
           return (
             <div
               key={section.title}
-              className="p-6 bg-white rounded-xl border border-gray-200"
+              className="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 flex items-center justify-center">
                   <Icon size={20} />
                 </div>
-                <h3 className="font-bold text-lg">{section.title}</h3>
+                <h3 className="font-bold text-lg dark:text-gray-100">{section.title}</h3>
               </div>
-              <p className="text-gray-600 text-sm mb-3">
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
                 {section.description}
               </p>
               <ul className="space-y-1">
                 {section.features.map((feature, i) => (
-                  <li key={i} className="text-sm text-gray-700 flex gap-2">
+                  <li key={i} className="text-sm text-gray-700 dark:text-gray-300 flex gap-2">
                     <span className="text-indigo-400 flex-shrink-0">-</span>
                     {feature}
                   </li>
@@ -159,7 +159,7 @@ export default function ManualPage() {
 
       {/* Usage Tips */}
       <div className="mt-10">
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 dark:text-gray-100">
           <MousePointerClick size={20} />
           便利な使い方
         </h2>
@@ -169,14 +169,14 @@ export default function ManualPage() {
             return (
               <div
                 key={tip.title}
-                className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl flex gap-4"
+                className="p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl flex gap-4"
               >
-                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 flex items-center justify-center flex-shrink-0">
                   <Icon size={16} />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm">{tip.title}</h3>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <h3 className="font-semibold text-sm dark:text-gray-100">{tip.title}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     {tip.description}
                   </p>
                 </div>
