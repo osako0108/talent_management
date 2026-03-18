@@ -193,17 +193,17 @@ export default function DepartmentsMasterPage() {
   if (connectionError) {
     return (
       <div className="p-8">
-        <h1 className="text-2xl font-bold mb-6">部署マスタ管理</h1>
-        <div className="p-6 bg-amber-50 border border-amber-200 rounded-xl">
+        <h1 className="text-2xl font-bold mb-6 dark:text-gray-100">部署マスタ管理</h1>
+        <div className="p-6 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-xl">
           <div className="flex items-start gap-3">
             <AlertTriangle size={24} className="text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h2 className="font-semibold text-amber-800 mb-2">Supabaseに接続できません</h2>
-              <p className="text-sm text-amber-700 mb-3">{error}</p>
-              <p className="text-sm text-amber-600 mb-4">
+              <h2 className="font-semibold text-amber-800 dark:text-amber-200 mb-2">Supabaseに接続できません</h2>
+              <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">{error}</p>
+              <p className="text-sm text-amber-600 dark:text-amber-400 mb-4">
                 以下を確認してください:
               </p>
-              <ul className="text-sm text-amber-700 space-y-1 mb-4">
+              <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1 mb-4">
                 <li>1. .env.local に NEXT_PUBLIC_SUPABASE_URL を設定済みか</li>
                 <li>2. .env.local に NEXT_PUBLIC_SUPABASE_ANON_KEY を設定済みか</li>
                 <li>3. Supabase ダッシュボードで migration.sql を実行済みか</li>
@@ -227,8 +227,8 @@ export default function DepartmentsMasterPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">部署マスタ管理</h1>
-          <p className="text-gray-500 text-sm mt-1">部署の追加・編集・削除</p>
+          <h1 className="text-2xl font-bold dark:text-gray-100">部署マスタ管理</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">部署の追加・編集・削除</p>
         </div>
         {!isAdding && !editingId && (
           <button
@@ -245,43 +245,43 @@ export default function DepartmentsMasterPage() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-400 rounded-lg text-sm">
           {error}
         </div>
       )}
 
       {(isAdding || editingId) && (
-        <div className="mb-6 p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-          <h2 className="font-semibold mb-4">
+        <div className="mb-6 p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+          <h2 className="font-semibold mb-4 dark:text-gray-100">
             {editingId ? "部署を編集" : "新規部署を追加"}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 部署名 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                 placeholder="エンジニアリング"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 部署長
               </label>
               <input
                 type="text"
                 value={form.head}
                 onChange={(e) => setForm({ ...form, head: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                 placeholder="田中 太郎"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 目標人数
               </label>
               <input
@@ -290,11 +290,11 @@ export default function DepartmentsMasterPage() {
                 onChange={(e) =>
                   setForm({ ...form, head_count: Number(e.target.value) || 0 })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 予算（円）
               </label>
               <input
@@ -303,11 +303,11 @@ export default function DepartmentsMasterPage() {
                 onChange={(e) =>
                   setForm({ ...form, budget: Number(e.target.value) || 0 })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 説明
               </label>
               <input
@@ -316,12 +316,12 @@ export default function DepartmentsMasterPage() {
                 onChange={(e) =>
                   setForm({ ...form, description: e.target.value })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                 placeholder="プロダクト開発・インフラ管理"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 カラー
               </label>
               <div className="flex items-center gap-2">
@@ -329,9 +329,9 @@ export default function DepartmentsMasterPage() {
                   type="color"
                   value={form.color}
                   onChange={(e) => setForm({ ...form, color: e.target.value })}
-                  className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
+                  className="w-10 h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
                 />
-                <span className="text-sm text-gray-500">{form.color}</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">{form.color}</span>
               </div>
             </div>
           </div>
@@ -346,7 +346,7 @@ export default function DepartmentsMasterPage() {
             </button>
             <button
               onClick={cancelEdit}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               <X size={16} />
               キャンセル
@@ -356,21 +356,21 @@ export default function DepartmentsMasterPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500">読み込み中...</div>
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">読み込み中...</div>
       ) : sorted.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           部署が登録されていません
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400">
                   カラー
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100 select-none"
+                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
                   onClick={() => toggleSort("name")}
                 >
                   <div className="flex items-center gap-1">
@@ -378,7 +378,7 @@ export default function DepartmentsMasterPage() {
                   </div>
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100 select-none"
+                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
                   onClick={() => toggleSort("head")}
                 >
                   <div className="flex items-center gap-1">
@@ -386,7 +386,7 @@ export default function DepartmentsMasterPage() {
                   </div>
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100 select-none"
+                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
                   onClick={() => toggleSort("head_count")}
                 >
                   <div className="flex items-center gap-1">
@@ -394,7 +394,7 @@ export default function DepartmentsMasterPage() {
                   </div>
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100 select-none"
+                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
                   onClick={() => toggleSort("budget")}
                 >
                   <div className="flex items-center gap-1">
@@ -402,14 +402,14 @@ export default function DepartmentsMasterPage() {
                   </div>
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100 select-none"
+                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
                   onClick={() => toggleSort("description")}
                 >
                   <div className="flex items-center gap-1">
                     説明 <SortIcon col="description" />
                   </div>
                 </th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">
+                <th className="text-right px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400">
                   操作
                 </th>
               </tr>
@@ -418,7 +418,7 @@ export default function DepartmentsMasterPage() {
               {sorted.map((dept) => (
                 <tr
                   key={dept.id}
-                  className="border-b border-gray-100 hover:bg-gray-50"
+                  className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   <td className="px-4 py-3">
                     <div
@@ -426,29 +426,29 @@ export default function DepartmentsMasterPage() {
                       style={{ backgroundColor: dept.color || "#ccc" }}
                     />
                   </td>
-                  <td className="px-4 py-3 font-medium">{dept.name || "-"}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-4 py-3 font-medium dark:text-gray-100">{dept.name || "-"}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                     {dept.head || "-"}
                   </td>
-                  <td className="px-4 py-3 text-sm">{dept.head_count ?? 0}人</td>
-                  <td className="px-4 py-3 text-sm">
+                  <td className="px-4 py-3 text-sm dark:text-gray-300">{dept.head_count ?? 0}人</td>
+                  <td className="px-4 py-3 text-sm dark:text-gray-300">
                     {((dept.budget ?? 0) / 10000).toLocaleString()}万円
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                     {dept.description || "-"}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => startEdit(dept)}
-                        className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                        className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded transition-colors"
                         title="編集"
                       >
                         <Pencil size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(dept.id)}
-                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
                         title="削除"
                       >
                         <Trash2 size={16} />
