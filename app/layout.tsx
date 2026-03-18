@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    <html lang="ja" style={{ colorScheme: "light" }}>
       <body className="antialiased bg-gray-50 text-gray-900 font-sans">
         <div className="flex h-screen overflow-hidden">
           <Sidebar />
