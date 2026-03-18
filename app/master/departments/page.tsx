@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { Plus, Pencil, Trash2, Save, X, AlertTriangle, RefreshCw, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { InlineLoading } from "@/components/LoadingSpinner";
 
 type Department = {
   id: string;
@@ -356,7 +357,7 @@ export default function DepartmentsMasterPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500 dark:text-gray-400">読み込み中...</div>
+        <InlineLoading />
       ) : sorted.length === 0 ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           部署が登録されていません

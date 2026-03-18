@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { Plus, Pencil, Trash2, Save, X, Tag, AlertTriangle, RefreshCw, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { InlineLoading, LoadingSpinner } from "@/components/LoadingSpinner";
 
 type SkillCategory = {
   id: string;
@@ -323,7 +324,7 @@ export default function SkillsMasterPage() {
         )}
 
         {loading ? (
-          <div className="text-gray-400 text-sm">読み込み中...</div>
+          <LoadingSpinner size="sm" />
         ) : categories.length === 0 ? (
           <div className="text-gray-400 text-sm">カテゴリが登録されていません</div>
         ) : (
@@ -445,7 +446,7 @@ export default function SkillsMasterPage() {
         )}
 
         {loading ? (
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">読み込み中...</div>
+          <InlineLoading />
         ) : sortedSkills.length === 0 ? (
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             スキルが登録されていません

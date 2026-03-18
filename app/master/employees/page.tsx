@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import { Plus, Pencil, Trash2, Save, X, Search, AlertTriangle, RefreshCw, Upload, ArrowUp, ArrowDown, ArrowUpDown, ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, Search, AlertTriangle, RefreshCw, Upload, ArrowUp, ArrowDown, ArrowUpDown, ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { InlineLoading } from "@/components/LoadingSpinner";
 
 type Department = { id: string; name: string };
 
@@ -62,6 +63,10 @@ export default function EmployeesMasterPage() {
   // Sorting
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -258,6 +263,13 @@ export default function EmployeesMasterPage() {
     }
     return sortDir === "asc" ? cmp : -cmp;
   });
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(sorted.length / perPage));
+  const paged = sorted.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+  // Reset to page 1 when search or sort changes
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, sortKey, sortDir]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -553,8 +565,8 @@ export default function EmployeesMasterPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500 dark:text-gray-400">読み込み中...</div>
-      ) : sorted.length === 0 ? (
+        <InlineLoading />
+      ) : paged.length === 0 && sorted.length === 0 ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           {searchQuery
             ? "該当する従業員が見つかりません"
@@ -619,7 +631,7 @@ export default function EmployeesMasterPage() {
               </tr>
             </thead>
             <tbody>
-              {sorted.map((emp) => (
+              {paged.map((emp) => (
                 <tr
                   key={emp.id}
                   className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
@@ -676,6 +688,64 @@ export default function EmployeesMasterPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && sorted.length > 0 && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <span>{sorted.length}件中 {(currentPage - 1) * perPage + 1}-{Math.min(currentPage * perPage, sorted.length)}件を表示</span>
+            <select
+              value={perPage}
+              onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
+              className="ml-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-gray-100"
+            >
+              {[10, 20, 50, 100].map((n) => (
+                <option key={n} value={n}>{n}件/ページ</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+              .reduce<(number | "...")[]>((acc, p, i, arr) => {
+                if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, i) =>
+                p === "..." ? (
+                  <span key={`dot-${i}`} className="px-2 text-gray-400 dark:text-gray-500 text-sm">...</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setCurrentPage(p as number)}
+                    className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
+                      currentPage === p
+                        ? "bg-indigo-600 text-white"
+                        : "border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       )}
     </div>
