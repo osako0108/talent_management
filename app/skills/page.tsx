@@ -6,10 +6,10 @@ import { employees, departments, skillCategories } from "@/lib/data";
 const LEVEL_LABELS = ["", "入門", "基礎", "中級", "上級", "エキスパート"];
 const LEVEL_BG = [
   "",
-  "bg-gray-100 text-gray-500",
-  "bg-blue-100 text-blue-700",
-  "bg-green-100 text-green-700",
-  "bg-amber-100 text-amber-700",
+  "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400",
+  "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
+  "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
+  "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
   "bg-indigo-600 text-white",
 ];
 
@@ -69,8 +69,8 @@ export default function SkillsPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">スキルマトリックス</h1>
-        <p className="text-gray-500 mt-1">組織全体のスキル保有状況を可視化</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">スキルマトリックス</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">組織全体のスキル保有状況を可視化</p>
       </div>
 
       {/* Filters */}
@@ -78,7 +78,7 @@ export default function SkillsPage() {
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:bg-gray-700 dark:text-gray-100"
         >
           <option value="all">全カテゴリ</option>
           {skillCategories.map((c) => (
@@ -91,7 +91,7 @@ export default function SkillsPage() {
         <select
           value={deptFilter}
           onChange={(e) => setDeptFilter(e.target.value)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          className="text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:bg-gray-700 dark:text-gray-100"
         >
           <option value="all">全部署</option>
           {departments.map((d) => (
@@ -102,7 +102,7 @@ export default function SkillsPage() {
         </select>
 
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-gray-500">最低レベル:</span>
+          <span className="text-gray-500 dark:text-gray-400">最低レベル:</span>
           {[1, 2, 3, 4, 5].map((lv) => (
             <button
               key={lv}
@@ -110,7 +110,7 @@ export default function SkillsPage() {
               className={`w-8 h-8 rounded-full text-xs font-medium transition-colors ${
                 minLevel === lv
                   ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"
               }`}
             >
               {lv}
@@ -124,14 +124,14 @@ export default function SkillsPage() {
         {filtered.map((skill) => (
           <div
             key={skill.name}
-            className="bg-white rounded-xl border border-gray-100 shadow-sm p-4"
+            className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4"
           >
             <div className="flex items-start justify-between mb-2">
               <div>
-                <h3 className="font-semibold text-sm text-gray-900">
+                <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100">
                   {skill.name}
                 </h3>
-                <span className="text-xs text-gray-400">{skill.category}</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500">{skill.category}</span>
               </div>
               <span className="text-lg font-bold text-indigo-600">
                 {skill.count}
@@ -145,7 +145,7 @@ export default function SkillsPage() {
                   className={`h-1.5 flex-1 rounded-full ${
                     lv <= Math.round(skill.avgLevel)
                       ? "bg-indigo-500"
-                      : "bg-gray-100"
+                      : "bg-gray-100 dark:bg-gray-700"
                   }`}
                 />
               ))}
@@ -157,7 +157,7 @@ export default function SkillsPage() {
                   key={h.empId}
                   className="flex items-center justify-between"
                 >
-                  <span className="text-xs text-gray-600 truncate flex-1">
+                  <span className="text-xs text-gray-600 dark:text-gray-400 truncate flex-1">
                     {h.name}
                   </span>
                   <span
@@ -168,7 +168,7 @@ export default function SkillsPage() {
                 </div>
               ))}
               {skill.holders.length > 3 && (
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-gray-400 dark:text-gray-500">
                   +{skill.holders.length - 3}名
                 </div>
               )}
@@ -178,23 +178,23 @@ export default function SkillsPage() {
       </div>
 
       {/* Matrix Table */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 overflow-x-auto">
-        <h2 className="font-semibold text-gray-800 mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 overflow-x-auto">
+        <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">
           スキル×メンバーマトリックス
-          <span className="text-xs text-gray-400 font-normal ml-2">
+          <span className="text-xs text-gray-400 dark:text-gray-500 font-normal ml-2">
             （表示: 上位{matrixSkills.length}スキル）
           </span>
         </h2>
         <table className="text-xs w-full">
           <thead>
             <tr>
-              <th className="text-left py-2 pr-4 font-semibold text-gray-600 sticky left-0 bg-white min-w-28">
+              <th className="text-left py-2 pr-4 font-semibold text-gray-600 dark:text-gray-400 sticky left-0 bg-white dark:bg-gray-800 min-w-28">
                 メンバー
               </th>
               {matrixSkills.map((sk) => (
                 <th
                   key={sk.name}
-                  className="text-center py-2 px-1 font-medium text-gray-500 min-w-16"
+                  className="text-center py-2 px-1 font-medium text-gray-500 dark:text-gray-400 min-w-16"
                 >
                   <div className="writing-mode-vertical">{sk.name}</div>
                 </th>
@@ -203,10 +203,10 @@ export default function SkillsPage() {
           </thead>
           <tbody>
             {matrixEmployees.map((emp) => (
-              <tr key={emp.id} className="border-t border-gray-50">
-                <td className="py-2 pr-4 font-medium text-gray-800 sticky left-0 bg-white">
+              <tr key={emp.id} className="border-t border-gray-50 dark:border-gray-700">
+                <td className="py-2 pr-4 font-medium text-gray-800 dark:text-gray-200 sticky left-0 bg-white dark:bg-gray-800">
                   <div>{emp.name}</div>
-                  <div className="text-gray-400 font-normal">
+                  <div className="text-gray-400 dark:text-gray-500 font-normal">
                     {emp.department}
                   </div>
                 </td>
@@ -222,7 +222,7 @@ export default function SkillsPage() {
                           {empSkill.level}
                         </div>
                       ) : (
-                        <div className="w-7 h-7 rounded-full bg-gray-50 mx-auto" />
+                        <div className="w-7 h-7 rounded-full bg-gray-50 dark:bg-gray-900 mx-auto" />
                       )}
                     </td>
                   );
@@ -233,7 +233,7 @@ export default function SkillsPage() {
         </table>
 
         {/* Legend */}
-        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
+        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
           {[1, 2, 3, 4, 5].map((lv) => (
             <div key={lv} className="flex items-center gap-1.5">
               <div
@@ -241,7 +241,7 @@ export default function SkillsPage() {
               >
                 {lv}
               </div>
-              <span className="text-xs text-gray-500">{LEVEL_LABELS[lv]}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{LEVEL_LABELS[lv]}</span>
             </div>
           ))}
         </div>

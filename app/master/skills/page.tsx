@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import { Plus, Pencil, Trash2, Save, X, Tag, AlertTriangle, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, Tag, AlertTriangle, RefreshCw, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 
 type SkillCategory = {
   id: string;
@@ -15,6 +15,9 @@ type SkillMaster = {
   category_id: string;
   skill_categories?: { name: string } | null;
 };
+
+type SortKey = "name" | "category";
+type SortDir = "asc" | "desc";
 
 export default function SkillsMasterPage() {
   const [categories, setCategories] = useState<SkillCategory[]>([]);
@@ -37,6 +40,10 @@ export default function SkillsMasterPage() {
 
   // Filter
   const [filterCategoryId, setFilterCategoryId] = useState("");
+
+  // Sorting
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -188,17 +195,47 @@ export default function SkillsMasterPage() {
     ? skills.filter((s) => s.category_id === filterCategoryId)
     : skills;
 
+  // Sorting
+  const sortedSkills = [...filteredSkills].sort((a, b) => {
+    if (!sortKey) return 0;
+    let cmp = 0;
+    switch (sortKey) {
+      case "name":
+        cmp = (a.name ?? "").localeCompare(b.name ?? "", "ja");
+        break;
+      case "category":
+        cmp = (a.skill_categories?.name ?? "").localeCompare(b.skill_categories?.name ?? "", "ja");
+        break;
+    }
+    return sortDir === "asc" ? cmp : -cmp;
+  });
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      if (sortDir === "asc") setSortDir("desc");
+      else { setSortKey(null); setSortDir("asc"); }
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
+  const SortIcon = ({ col }: { col: SortKey }) => {
+    if (sortKey !== col) return <ArrowUpDown size={14} className="text-gray-300" />;
+    return sortDir === "asc" ? <ArrowUp size={14} className="text-indigo-500" /> : <ArrowDown size={14} className="text-indigo-500" />;
+  };
+
   if (connectionError) {
     return (
       <div className="p-8">
-        <h1 className="text-2xl font-bold mb-6">スキルマスタ管理</h1>
-        <div className="p-6 bg-amber-50 border border-amber-200 rounded-xl">
+        <h1 className="text-2xl font-bold mb-6 dark:text-gray-100">スキルマスタ管理</h1>
+        <div className="p-6 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-xl">
           <div className="flex items-start gap-3">
             <AlertTriangle size={24} className="text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h2 className="font-semibold text-amber-800 mb-2">Supabaseに接続できません</h2>
-              <p className="text-sm text-amber-700 mb-3">{error}</p>
-              <ul className="text-sm text-amber-700 space-y-1 mb-4">
+              <h2 className="font-semibold text-amber-800 dark:text-amber-200 mb-2">Supabaseに接続できません</h2>
+              <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">{error}</p>
+              <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1 mb-4">
                 <li>1. .env.local に NEXT_PUBLIC_SUPABASE_URL を設定済みか</li>
                 <li>2. .env.local に NEXT_PUBLIC_SUPABASE_ANON_KEY を設定済みか</li>
                 <li>3. Supabase ダッシュボードで migration.sql を実行済みか</li>
@@ -216,13 +253,13 @@ export default function SkillsMasterPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-1">スキルマスタ管理</h1>
-      <p className="text-gray-500 text-sm mb-6">
+      <h1 className="text-2xl font-bold mb-1 dark:text-gray-100">スキルマスタ管理</h1>
+      <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
         スキルカテゴリとスキルの追加・編集・削除
       </p>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-400 rounded-lg text-sm">
           {error}
         </div>
       )}
@@ -230,7 +267,7 @@ export default function SkillsMasterPage() {
       {/* Skill Categories Section */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
+          <h2 className="text-lg font-semibold flex items-center gap-2 dark:text-gray-100">
             <Tag size={20} />
             スキルカテゴリ
           </h2>
@@ -250,16 +287,16 @@ export default function SkillsMasterPage() {
         </div>
 
         {catFormOpen && (
-          <div className="mb-4 p-4 bg-white rounded-xl border border-gray-200 shadow-sm flex items-end gap-3">
+          <div className="mb-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-end gap-3">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 カテゴリ名 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={catName}
                 onChange={(e) => setCatName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                 placeholder="技術"
               />
             </div>
@@ -278,7 +315,7 @@ export default function SkillsMasterPage() {
                 setCatName("");
                 setError("");
               }}
-              className="flex items-center gap-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+              className="flex items-center gap-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm"
             >
               <X size={16} />
             </button>
@@ -294,7 +331,7 @@ export default function SkillsMasterPage() {
             {categories.map((cat) => (
               <div
                 key={cat.id}
-                className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm"
+                className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm dark:text-gray-200"
               >
                 <span>{cat.name || "(名称なし)"}</span>
                 <button
@@ -322,12 +359,12 @@ export default function SkillsMasterPage() {
       {/* Skills Section */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">スキル一覧</h2>
+          <h2 className="text-lg font-semibold dark:text-gray-100">スキル一覧</h2>
           <div className="flex items-center gap-3">
             <select
               value={filterCategoryId}
               onChange={(e) => setFilterCategoryId(e.target.value)}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="">全カテゴリ</option>
               {categories.map((c) => (
@@ -354,28 +391,28 @@ export default function SkillsMasterPage() {
         </div>
 
         {skillFormOpen && (
-          <div className="mb-4 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+          <div className="mb-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
             <div className="flex items-end gap-3">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   スキル名 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={skillName}
                   onChange={(e) => setSkillName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                   placeholder="TypeScript"
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   カテゴリ <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={skillCategoryId}
                   onChange={(e) => setSkillCategoryId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
                 >
                   <option value="">選択してください</option>
                   {categories.map((c) => (
@@ -399,7 +436,7 @@ export default function SkillsMasterPage() {
                   setEditingSkillId(null);
                   setError("");
                 }}
-                className="flex items-center gap-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+                className="flex items-center gap-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm"
               >
                 <X size={16} />
               </button>
@@ -408,36 +445,46 @@ export default function SkillsMasterPage() {
         )}
 
         {loading ? (
-          <div className="text-center py-12 text-gray-500">読み込み中...</div>
-        ) : filteredSkills.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">読み込み中...</div>
+        ) : sortedSkills.length === 0 ? (
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             スキルが登録されていません
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    スキル名
+                  <th
+                    className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
+                    onClick={() => toggleSort("name")}
+                  >
+                    <div className="flex items-center gap-1">
+                      スキル名 <SortIcon col="name" />
+                    </div>
                   </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    カテゴリ
+                  <th
+                    className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
+                    onClick={() => toggleSort("category")}
+                  >
+                    <div className="flex items-center gap-1">
+                      カテゴリ <SortIcon col="category" />
+                    </div>
                   </th>
-                  <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">
+                  <th className="text-right px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400">
                     操作
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {filteredSkills.map((skill) => (
+                {sortedSkills.map((skill) => (
                   <tr
                     key={skill.id}
-                    className="border-b border-gray-100 hover:bg-gray-50"
+                    className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
-                    <td className="px-4 py-3 font-medium">{skill.name || "-"}</td>
+                    <td className="px-4 py-3 font-medium dark:text-gray-100">{skill.name || "-"}</td>
                     <td className="px-4 py-3 text-sm">
-                      <span className="px-2 py-1 bg-gray-100 rounded-full text-gray-600">
+                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-400">
                         {skill.skill_categories?.name || "(未分類)"}
                       </span>
                     </td>
@@ -450,14 +497,14 @@ export default function SkillsMasterPage() {
                             setSkillName(skill.name ?? "");
                             setSkillCategoryId(skill.category_id ?? "");
                           }}
-                          className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                          className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded transition-colors"
                           title="編集"
                         >
                           <Pencil size={16} />
                         </button>
                         <button
                           onClick={() => deleteSkill(skill.id)}
-                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
                           title="削除"
                         >
                           <Trash2 size={16} />
