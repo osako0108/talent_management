@@ -2,11 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Plus, Pencil, Trash2, Save, X, Tag } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, Tag, Tags, Filter } from "lucide-react";
 
 type SkillCategory = {
   id: string;
   name: string;
+};
+
+type SkillTag = {
+  id: string;
+  name: string;
+  color: string;
+};
+
+type SkillMasterTag = {
+  skill_tag_id: string;
+  skill_tags: SkillTag;
 };
 
 type SkillMaster = {
@@ -14,11 +25,13 @@ type SkillMaster = {
   name: string;
   category_id: string;
   skill_categories?: { name: string };
+  skill_master_tags?: SkillMasterTag[];
 };
 
 export default function SkillsMasterPage() {
   const [categories, setCategories] = useState<SkillCategory[]>([]);
   const [skills, setSkills] = useState<SkillMaster[]>([]);
+  const [tags, setTags] = useState<SkillTag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -32,23 +45,34 @@ export default function SkillsMasterPage() {
   const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
   const [skillName, setSkillName] = useState("");
   const [skillCategoryId, setSkillCategoryId] = useState("");
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+
+  // Tag form
+  const [tagFormOpen, setTagFormOpen] = useState(false);
+  const [editingTagId, setEditingTagId] = useState<string | null>(null);
+  const [tagName, setTagName] = useState("");
+  const [tagColor, setTagColor] = useState("#6366f1");
 
   // Filter
   const [filterCategoryId, setFilterCategoryId] = useState("");
+  const [filterTagId, setFilterTagId] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
-    const [catRes, skillRes] = await Promise.all([
+    const [catRes, skillRes, tagRes] = await Promise.all([
       supabase.from("skill_categories").select("*").order("name"),
       supabase
         .from("skill_masters")
-        .select("*, skill_categories(name)")
+        .select("*, skill_categories(name), skill_master_tags(skill_tag_id, skill_tags(*))")
         .order("name"),
+      supabase.from("skill_tags").select("*").order("name"),
     ]);
     if (catRes.error) setError(catRes.error.message);
     else setCategories(catRes.data || []);
     if (skillRes.error) setError(skillRes.error.message);
     else setSkills(skillRes.data || []);
+    if (tagRes.error) setError(tagRes.error.message);
+    else setTags(tagRes.data || []);
     setLoading(false);
   };
 
@@ -101,6 +125,51 @@ export default function SkillsMasterPage() {
     fetchData();
   };
 
+  // Tag CRUD
+  const saveTag = async () => {
+    setError("");
+    if (!tagName.trim()) {
+      setError("タグ名は必須です");
+      return;
+    }
+    if (editingTagId) {
+      const { error } = await supabase
+        .from("skill_tags")
+        .update({ name: tagName, color: tagColor })
+        .eq("id", editingTagId);
+      if (error) {
+        setError(error.message);
+        return;
+      }
+    } else {
+      const { error } = await supabase
+        .from("skill_tags")
+        .insert({ name: tagName, color: tagColor });
+      if (error) {
+        setError(error.message);
+        return;
+      }
+    }
+    setTagFormOpen(false);
+    setEditingTagId(null);
+    setTagName("");
+    setTagColor("#6366f1");
+    fetchData();
+  };
+
+  const deleteTag = async (id: string) => {
+    if (!confirm("このタグを削除しますか？")) return;
+    const { error } = await supabase
+      .from("skill_tags")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    fetchData();
+  };
+
   // Skill CRUD
   const saveSkill = async () => {
     setError("");
@@ -113,6 +182,8 @@ export default function SkillsMasterPage() {
       return;
     }
     const payload = { name: skillName, category_id: skillCategoryId };
+    let skillId = editingSkillId;
+
     if (editingSkillId) {
       const { error } = await supabase
         .from("skill_masters")
@@ -123,16 +194,44 @@ export default function SkillsMasterPage() {
         return;
       }
     } else {
-      const { error } = await supabase.from("skill_masters").insert(payload);
+      const { data, error } = await supabase
+        .from("skill_masters")
+        .insert(payload)
+        .select("id")
+        .single();
       if (error) {
         setError(error.message);
         return;
       }
+      skillId = data.id;
     }
+
+    // Update tags: delete all existing, then insert selected
+    if (skillId) {
+      await supabase
+        .from("skill_master_tags")
+        .delete()
+        .eq("skill_master_id", skillId);
+
+      if (selectedTagIds.length > 0) {
+        const tagInserts = selectedTagIds.map((tagId) => ({
+          skill_master_id: skillId,
+          skill_tag_id: tagId,
+        }));
+        const { error: tagError } = await supabase
+          .from("skill_master_tags")
+          .insert(tagInserts);
+        if (tagError) {
+          setError(tagError.message);
+        }
+      }
+    }
+
     setSkillFormOpen(false);
     setEditingSkillId(null);
     setSkillName("");
     setSkillCategoryId("");
+    setSelectedTagIds([]);
     fetchData();
   };
 
@@ -149,15 +248,55 @@ export default function SkillsMasterPage() {
     fetchData();
   };
 
-  const filteredSkills = filterCategoryId
-    ? skills.filter((s) => s.category_id === filterCategoryId)
-    : skills;
+  const getSkillTags = (skill: SkillMaster): SkillTag[] => {
+    if (!skill.skill_master_tags) return [];
+    return skill.skill_master_tags
+      .map((mt) => mt.skill_tags)
+      .filter(Boolean);
+  };
+
+  const handleEditSkill = (skill: SkillMaster) => {
+    setSkillFormOpen(true);
+    setEditingSkillId(skill.id);
+    setSkillName(skill.name);
+    setSkillCategoryId(skill.category_id);
+    setSelectedTagIds(getSkillTags(skill).map((t) => t.id));
+  };
+
+  const toggleTagSelection = (tagId: string) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(tagId)
+        ? prev.filter((id) => id !== tagId)
+        : [...prev, tagId]
+    );
+  };
+
+  const filteredSkills = skills.filter((s) => {
+    const matchCategory = !filterCategoryId || s.category_id === filterCategoryId;
+    const matchTag =
+      !filterTagId ||
+      getSkillTags(s).some((t) => t.id === filterTagId);
+    return matchCategory && matchTag;
+  });
+
+  const TAG_PRESET_COLORS = [
+    "#6366f1",
+    "#ef4444",
+    "#f59e0b",
+    "#10b981",
+    "#3b82f6",
+    "#8b5cf6",
+    "#ec4899",
+    "#14b8a6",
+    "#f97316",
+    "#64748b",
+  ];
 
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-1">スキルマスタ管理</h1>
       <p className="text-gray-500 text-sm mb-6">
-        スキルカテゴリとスキルの追加・編集・削除
+        スキルカテゴリ・スキルタグ・スキルの追加・編集・削除
       </p>
 
       {error && (
@@ -251,6 +390,126 @@ export default function SkillsMasterPage() {
         </div>
       </div>
 
+      {/* Skill Tags Section */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Tags size={20} />
+            スキルタグ
+          </h2>
+          {!tagFormOpen && (
+            <button
+              onClick={() => {
+                setTagFormOpen(true);
+                setEditingTagId(null);
+                setTagName("");
+                setTagColor("#6366f1");
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+            >
+              <Plus size={16} />
+              タグ追加
+            </button>
+          )}
+        </div>
+
+        {tagFormOpen && (
+          <div className="mb-4 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  タグ名 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={tagName}
+                  onChange={(e) => setTagName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="開発"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  カラー
+                </label>
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    {TAG_PRESET_COLORS.map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => setTagColor(c)}
+                        className={`w-7 h-7 rounded-full border-2 transition-all ${
+                          tagColor === c
+                            ? "border-gray-800 scale-110"
+                            : "border-transparent hover:border-gray-300"
+                        }`}
+                        style={{ backgroundColor: c }}
+                        title={c}
+                      />
+                    ))}
+                  </div>
+                  <input
+                    type="color"
+                    value={tagColor}
+                    onChange={(e) => setTagColor(e.target.value)}
+                    className="w-8 h-8 rounded cursor-pointer border-0"
+                    title="カスタムカラー"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={saveTag}
+                className="flex items-center gap-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm"
+              >
+                <Save size={16} />
+                保存
+              </button>
+              <button
+                onClick={() => {
+                  setTagFormOpen(false);
+                  setEditingTagId(null);
+                  setTagName("");
+                  setTagColor("#6366f1");
+                  setError("");
+                }}
+                className="flex items-center gap-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <div
+              key={tag.id}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm text-white"
+              style={{ backgroundColor: tag.color }}
+            >
+              <span>{tag.name}</span>
+              <button
+                onClick={() => {
+                  setTagFormOpen(true);
+                  setEditingTagId(tag.id);
+                  setTagName(tag.name);
+                  setTagColor(tag.color);
+                }}
+                className="p-0.5 text-white/70 hover:text-white"
+              >
+                <Pencil size={12} />
+              </button>
+              <button
+                onClick={() => deleteTag(tag.id)}
+                className="p-0.5 text-white/70 hover:text-white"
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Skills Section */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -268,6 +527,18 @@ export default function SkillsMasterPage() {
                 </option>
               ))}
             </select>
+            <select
+              value={filterTagId}
+              onChange={(e) => setFilterTagId(e.target.value)}
+              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">全タグ</option>
+              {tags.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
             {!skillFormOpen && (
               <button
                 onClick={() => {
@@ -275,6 +546,7 @@ export default function SkillsMasterPage() {
                   setEditingSkillId(null);
                   setSkillName("");
                   setSkillCategoryId(categories[0]?.id || "");
+                  setSelectedTagIds([]);
                 }}
                 className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
               >
@@ -287,7 +559,7 @@ export default function SkillsMasterPage() {
 
         {skillFormOpen && (
           <div className="mb-4 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
-            <div className="flex items-end gap-3">
+            <div className="flex items-end gap-3 mb-3">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   スキル名 <span className="text-red-500">*</span>
@@ -328,6 +600,7 @@ export default function SkillsMasterPage() {
                 onClick={() => {
                   setSkillFormOpen(false);
                   setEditingSkillId(null);
+                  setSelectedTagIds([]);
                   setError("");
                 }}
                 className="flex items-center gap-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
@@ -335,6 +608,49 @@ export default function SkillsMasterPage() {
                 <X size={16} />
               </button>
             </div>
+            {tags.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Filter size={14} className="inline mr-1" />
+                  タグ
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <label
+                      key={tag.id}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm cursor-pointer transition-all border-2 ${
+                        selectedTagIds.includes(tag.id)
+                          ? "text-white border-transparent"
+                          : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                      }`}
+                      style={
+                        selectedTagIds.includes(tag.id)
+                          ? { backgroundColor: tag.color, borderColor: tag.color }
+                          : undefined
+                      }
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedTagIds.includes(tag.id)}
+                        onChange={() => toggleTagSelection(tag.id)}
+                        className="sr-only"
+                      />
+                      <span
+                        className={`w-3 h-3 rounded-full ${
+                          selectedTagIds.includes(tag.id) ? "bg-white/50" : ""
+                        }`}
+                        style={
+                          !selectedTagIds.includes(tag.id)
+                            ? { backgroundColor: tag.color }
+                            : undefined
+                        }
+                      />
+                      {tag.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -355,6 +671,9 @@ export default function SkillsMasterPage() {
                   <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
                     カテゴリ
                   </th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                    タグ
+                  </th>
                   <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">
                     操作
                   </th>
@@ -372,15 +691,23 @@ export default function SkillsMasterPage() {
                         {skill.skill_categories?.name || ""}
                       </span>
                     </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {getSkillTags(skill).map((tag) => (
+                          <span
+                            key={tag.id}
+                            className="px-2 py-0.5 rounded-full text-xs text-white"
+                            style={{ backgroundColor: tag.color }}
+                          >
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => {
-                            setSkillFormOpen(true);
-                            setEditingSkillId(skill.id);
-                            setSkillName(skill.name);
-                            setSkillCategoryId(skill.category_id);
-                          }}
+                          onClick={() => handleEditSkill(skill)}
                           className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
                           title="編集"
                         >
