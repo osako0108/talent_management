@@ -108,8 +108,8 @@ export default function DashboardPage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">ダッシュボード</h1>
-        <p className="text-gray-500 mt-1">組織全体の人材状況を一目で把握</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">ダッシュボード</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">組織全体の人材状況を一目で把握</p>
       </div>
 
       {/* KPI Cards */}
@@ -119,7 +119,7 @@ export default function DashboardPage() {
           value={totalEmployees}
           unit="名"
           icon={<Users size={20} className="text-indigo-600" />}
-          bg="bg-indigo-50"
+          bg="bg-indigo-50 dark:bg-indigo-900/30"
           sub={`在籍 ${activeCount}名 / リモート ${remoteCount}名`}
         />
         <KpiCard
@@ -127,7 +127,7 @@ export default function DashboardPage() {
           value={departments.length}
           unit="部署"
           icon={<Building2 size={20} className="text-emerald-600" />}
-          bg="bg-emerald-50"
+          bg="bg-emerald-50 dark:bg-emerald-900/30"
           sub="全社横断組織を含む"
         />
         <KpiCard
@@ -135,7 +135,7 @@ export default function DashboardPage() {
           value={avgPerf2024.toFixed(1)}
           unit="点"
           icon={<TrendingUp size={20} className="text-amber-600" />}
-          bg="bg-amber-50"
+          bg="bg-amber-50 dark:bg-amber-900/30"
           sub="2024年度評価（100点満点）"
         />
         <KpiCard
@@ -143,15 +143,15 @@ export default function DashboardPage() {
           value={onLeaveCount}
           unit="名"
           icon={<AlertCircle size={20} className="text-rose-600" />}
-          bg="bg-rose-50"
+          bg="bg-rose-50 dark:bg-rose-900/30"
           sub="休職中・ケア対象者"
         />
       </div>
 
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 lg:col-span-2">
-          <h2 className="font-semibold text-gray-800 mb-4">部署別人員構成</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 lg:col-span-2">
+          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">部署別人員構成</h2>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={deptData} barSize={36}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -172,8 +172,8 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-          <h2 className="font-semibold text-gray-800 mb-4">グレード分布</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">グレード分布</h2>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
@@ -191,7 +191,7 @@ export default function DashboardPage() {
               </Pie>
               <Legend
                 formatter={(value) => (
-                  <span className="text-xs text-gray-600">{value}</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400">{value}</span>
                 )}
               />
               <Tooltip formatter={(val) => [`${val}名`]} />
@@ -202,8 +202,8 @@ export default function DashboardPage() {
 
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-          <h2 className="font-semibold text-gray-800 mb-4">組織スキルバランス</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">組織スキルバランス</h2>
           <ResponsiveContainer width="100%" height={230}>
             <RadarChart data={radarData}>
               <PolarGrid />
@@ -220,18 +220,18 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-          <h2 className="font-semibold text-gray-800 mb-4">スキルカテゴリ分布</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">スキルカテゴリ分布</h2>
           <div className="space-y-2 mt-2">
             {skillData.map((item) => {
               const maxVal = skillData[0].count;
               return (
                 <div key={item.category}>
-                  <div className="flex justify-between text-xs text-gray-600 mb-0.5">
+                  <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-0.5">
                     <span>{item.category}</span>
                     <span>{item.count}件</span>
                   </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-indigo-500 rounded-full"
                       style={{ width: `${(item.count / maxVal) * 100}%` }}
@@ -243,9 +243,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-800">トップパフォーマー</h2>
+            <h2 className="font-semibold text-gray-800 dark:text-gray-200">トップパフォーマー</h2>
             <Link
               href="/employees"
               className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
@@ -259,9 +259,9 @@ export default function DashboardPage() {
                 emp.performance.find((p) => p.year === 2024)?.score ?? 0;
               return (
                 <Link href={`/employees/${emp.id}`} key={emp.id}>
-                  <div className="flex items-center gap-3 hover:bg-gray-50 rounded-lg p-1.5 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-colors cursor-pointer">
                     <div className="relative">
-                      <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-700">
+                      <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center font-bold text-indigo-700 dark:text-indigo-300">
                         {emp.avatar}
                       </div>
                       {i === 0 && (
@@ -275,7 +275,7 @@ export default function DashboardPage() {
                       <div className="text-sm font-medium truncate">
                         {emp.name}
                       </div>
-                      <div className="text-xs text-gray-400 truncate">
+                      <div className="text-xs text-gray-400 dark:text-gray-500 truncate">
                         {emp.role}
                       </div>
                     </div>
@@ -283,7 +283,7 @@ export default function DashboardPage() {
                       <div className="text-sm font-bold text-indigo-600">
                         {score}
                       </div>
-                      <div className="text-xs text-gray-400">点</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500">点</div>
                     </div>
                   </div>
                 </Link>
@@ -294,8 +294,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Alerts */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-        <h2 className="font-semibold text-gray-800 mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+        <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">
           アクションが必要な事項
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -336,9 +336,9 @@ function KpiCard({
   sub: string;
 }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm text-gray-500">{title}</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">{title}</span>
         <div
           className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center`}
         >
@@ -346,10 +346,10 @@ function KpiCard({
         </div>
       </div>
       <div className="flex items-end gap-1">
-        <span className="text-3xl font-bold text-gray-900">{value}</span>
-        <span className="text-sm text-gray-500 mb-1">{unit}</span>
+        <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">{value}</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">{unit}</span>
       </div>
-      <p className="text-xs text-gray-400 mt-1">{sub}</p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{sub}</p>
     </div>
   );
 }
@@ -364,9 +364,9 @@ function AlertItem({
   desc: string;
 }) {
   const borderBg = {
-    yellow: "border-yellow-300 bg-yellow-50",
-    rose: "border-rose-300 bg-rose-50",
-    indigo: "border-indigo-300 bg-indigo-50",
+    yellow: "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/30 dark:border-yellow-700",
+    rose: "border-rose-300 bg-rose-50 dark:bg-rose-900/30 dark:border-rose-700",
+    indigo: "border-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 dark:border-indigo-700",
   };
   const dot = {
     yellow: "bg-yellow-400",
@@ -377,9 +377,9 @@ function AlertItem({
     <div className={`rounded-lg border-l-4 p-4 ${borderBg[color]}`}>
       <div className="flex items-center gap-2 mb-1">
         <div className={`w-2 h-2 rounded-full ${dot[color]}`} />
-        <span className="text-sm font-semibold text-gray-800">{title}</span>
+        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{title}</span>
       </div>
-      <p className="text-xs text-gray-600 leading-relaxed">{desc}</p>
+      <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">{desc}</p>
     </div>
   );
 }

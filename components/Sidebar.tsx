@@ -11,7 +11,11 @@ import {
   ChevronRight,
   Database,
   BookOpen,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
+import { useTheme } from "./ThemeProvider";
 
 const navItems = [
   { href: "/", label: "ダッシュボード", icon: LayoutDashboard },
@@ -31,11 +35,20 @@ const utilItems = [
   { href: "/manual", label: "マニュアル", icon: BookOpen },
 ];
 
+const themeConfig = {
+  light: { icon: Sun, label: "ライト", next: "dark" as const },
+  dark: { icon: Moon, label: "ダーク", next: "system" as const },
+  system: { icon: Monitor, label: "システム", next: "light" as const },
+};
+
 export default function Sidebar() {
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const currentTheme = themeConfig[theme];
+  const ThemeIcon = currentTheme.icon;
 
   return (
-    <aside className="w-64 bg-gray-900 text-white flex flex-col flex-shrink-0">
+    <aside className="w-64 bg-gray-900 dark:bg-gray-950 text-white flex flex-col flex-shrink-0">
       <div className="px-6 py-5 border-b border-gray-700">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
@@ -113,6 +126,17 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Theme Toggle */}
+      <div className="px-3 pb-2">
+        <button
+          onClick={() => setTheme(currentTheme.next)}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+        >
+          <ThemeIcon size={18} />
+          <span className="flex-1 text-left">{currentTheme.label}モード</span>
+        </button>
+      </div>
 
       <div className="px-4 py-4 border-t border-gray-700">
         <div className="flex items-center gap-3 px-2">

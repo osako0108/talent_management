@@ -47,14 +47,14 @@ function MultiSelectDropdown({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-300 min-w-[120px]"
+        className="flex items-center gap-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 min-w-[120px] dark:bg-gray-700 dark:text-gray-100"
       >
-        <span className="text-gray-700">
+        <span className="text-gray-700 dark:text-gray-200">
           {selected.length === 0
             ? label
             : `${label} (${selected.length})`}
         </span>
-        <ChevronDown size={14} className="text-gray-400" />
+        <ChevronDown size={14} className="text-gray-400 dark:text-gray-500" />
       </button>
       {selected.length > 0 && (
         <button
@@ -68,19 +68,19 @@ function MultiSelectDropdown({
         </button>
       )}
       {open && (
-        <div className="absolute z-20 mt-1 w-52 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
+        <div className="absolute z-20 mt-1 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1">
           {options.map((opt) => (
             <label
               key={opt.value}
-              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm"
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm"
             >
               <input
                 type="checkbox"
                 checked={selected.includes(opt.value)}
                 onChange={() => toggle(opt.value)}
-                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="rounded border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
               />
-              <span>{opt.label}</span>
+              <span className="dark:text-gray-200">{opt.label}</span>
             </label>
           ))}
         </div>
@@ -180,8 +180,8 @@ export default function EmployeesPage() {
   return (
     <div className="p-6 space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">従業員管理</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">従業員管理</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">
           {employees.length}名の従業員情報を管理・検索
         </p>
       </div>
@@ -198,7 +198,7 @@ export default function EmployeesPage() {
             placeholder="名前・役職・スキルで検索..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 dark:bg-gray-700 dark:text-gray-100"
           />
         </div>
 
@@ -234,8 +234,8 @@ export default function EmployeesPage() {
                 onClick={() => toggleSort(opt.key)}
                 className={`flex items-center gap-1 px-2 py-1 text-xs rounded-md border transition-colors ${
                   sortKey === opt.key
-                    ? "border-indigo-300 bg-indigo-50 text-indigo-700"
-                    : "border-gray-200 text-gray-500 hover:bg-gray-50"
+                    ? "border-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+                    : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
                 }`}
               >
                 {opt.label}
@@ -255,26 +255,26 @@ export default function EmployeesPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-gray-400">絞り込み中:</span>
           {deptFilters.map((d) => (
-            <span key={`dept-${d}`} className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded-full">
+            <span key={`dept-${d}`} className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs rounded-full">
               {d}
               <button onClick={() => setDeptFilters(deptFilters.filter((v) => v !== d))}><X size={10} /></button>
             </span>
           ))}
           {statusFilters.map((s) => (
-            <span key={`status-${s}`} className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 text-xs rounded-full">
+            <span key={`status-${s}`} className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full">
               {statusLabels[s] || s}
               <button onClick={() => setStatusFilters(statusFilters.filter((v) => v !== s))}><X size={10} /></button>
             </span>
           ))}
           {gradeFilters.map((g) => (
-            <span key={`grade-${g}`} className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 text-xs rounded-full">
+            <span key={`grade-${g}`} className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs rounded-full">
               {g}
               <button onClick={() => setGradeFilters(gradeFilters.filter((v) => v !== g))}><X size={10} /></button>
             </span>
           ))}
           <button
             onClick={() => { setDeptFilters([]); setStatusFilters([]); setGradeFilters([]); }}
-            className="text-xs text-gray-400 hover:text-gray-600 underline"
+            className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline"
           >
             すべて解除
           </button>
@@ -282,7 +282,7 @@ export default function EmployeesPage() {
       )}
 
       {/* Results count */}
-      <div className="text-sm text-gray-500">
+      <div className="text-sm text-gray-500 dark:text-gray-400">
         {sorted.length}件表示 / {employees.length}件中
       </div>
 
@@ -292,14 +292,14 @@ export default function EmployeesPage() {
           const score = getScore(emp);
           return (
             <Link href={`/employees/${emp.id}`} key={emp.id}>
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md hover:border-indigo-200 transition-all cursor-pointer">
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-600 transition-all cursor-pointer">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-lg font-bold text-indigo-700 flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-lg font-bold text-indigo-700 dark:text-indigo-300 flex-shrink-0">
                     {emp.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                         {emp.name}
                       </h3>
                       <span
@@ -308,8 +308,8 @@ export default function EmployeesPage() {
                         {statusLabels[emp.status]}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-0.5">{emp.role}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{emp.role}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                       {emp.department} · {emp.grade}
                     </p>
                   </div>
@@ -320,23 +320,23 @@ export default function EmployeesPage() {
                     {emp.skills.slice(0, 4).map((skill) => (
                       <span
                         key={skill.name}
-                        className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+                        className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded"
                       >
                         {skill.name}
                       </span>
                     ))}
                     {emp.skills.length > 4 && (
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-400 dark:text-gray-500">
                         +{emp.skills.length - 4}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between text-xs text-gray-500 border-t border-gray-50 pt-3">
+                <div className="mt-4 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 border-t border-gray-50 dark:border-gray-700 pt-3">
                   <span>入社: {emp.joinDate.slice(0, 7)}</span>
                   <div className="flex items-center gap-1">
-                    <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="w-20 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-indigo-500 rounded-full"
                         style={{ width: `${score}%` }}
