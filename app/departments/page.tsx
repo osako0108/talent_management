@@ -1,6 +1,6 @@
 "use client";
 
-import { departments, employees } from "@/lib/data";
+import { useAppData } from "@/lib/useAppData";
 import Link from "next/link";
 import { Users, TrendingUp, ChevronRight } from "lucide-react";
 import {
@@ -15,6 +15,16 @@ import {
 } from "recharts";
 
 export default function DepartmentsPage() {
+  const { employees, departments, loading } = useAppData();
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center h-64">
+        <p className="text-gray-500 dark:text-gray-400">読み込み中...</p>
+      </div>
+    );
+  }
+
   const deptStats = departments.map((dept) => {
     const deptEmployees = employees.filter(
       (e) => e.department === dept.name

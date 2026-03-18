@@ -1,7 +1,8 @@
 "use client";
 
 import { use } from "react";
-import { employees, statusLabels, statusColors, gradeLabels } from "@/lib/data";
+import { useAppData } from "@/lib/useAppData";
+import { statusLabels, statusColors, gradeLabels } from "@/lib/data";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -32,7 +33,17 @@ export default function EmployeeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { employees, loading } = useAppData();
   const emp = employees.find((e) => e.id === id);
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center h-64">
+        <p className="text-gray-500 dark:text-gray-400">読み込み中...</p>
+      </div>
+    );
+  }
+
   if (!emp) notFound();
 
   const skillByCategory: Record<string, typeof emp.skills> = {};
