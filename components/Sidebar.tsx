@@ -13,6 +13,8 @@ import {
   ChevronLeft,
   BookOpen,
   Briefcase,
+  Award,
+  ToggleLeft,
   Database,
   Sun,
   Moon,
@@ -31,10 +33,12 @@ const navItems = [
 ];
 
 const masterItems = [
-  { href: "/master/departments", label: "部署マスタ" },
+  { href: "/master/departments", label: "部署マスタ", icon: undefined },
   { href: "/master/roles", label: "役職マスタ", icon: Briefcase },
-  { href: "/master/skills", label: "スキルマスタ" },
-  { href: "/master/employees", label: "スタッフマスタ" },
+  { href: "/master/skills", label: "スキルマスタ", icon: undefined },
+  { href: "/master/grades", label: "グレードマスタ", icon: Award },
+  { href: "/master/statuses", label: "ステータスマスタ", icon: ToggleLeft },
+  { href: "/master/employees", label: "スタッフマスタ", icon: undefined },
 ];
 
 const utilItems = [
@@ -133,7 +137,7 @@ export default function Sidebar() {
           </div>
         )}
         {collapsed && <div className="pt-3" />}
-        {masterItems.map(({ href, label }) => {
+        {masterItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
           return (
             <Link
@@ -148,7 +152,9 @@ export default function Sidebar() {
                   : "text-gray-300 hover:bg-gray-800 hover:text-white"
               }`}
             >
-              {collapsed ? (
+              {Icon ? (
+                <Icon size={18} className="flex-shrink-0" />
+              ) : collapsed ? (
                 <Database size={16} className="flex-shrink-0" />
               ) : (
                 <span className="w-[18px]" />

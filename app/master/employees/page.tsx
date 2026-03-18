@@ -6,6 +6,8 @@ import { Plus, Pencil, Trash2, Save, X, Search } from "lucide-react";
 
 type Department = { id: string; name: string };
 type Role = { id: string; name: string };
+type GradeMaster = { id: string; code: string; name: string; rank_order: number };
+type StatusMaster = { id: string; code: string; name: string; color: string };
 
 type Employee = {
   id: string;
@@ -21,8 +23,8 @@ type Employee = {
   departments?: { name: string } | null;
 };
 
-const grades = ["J1", "J2", "J3", "S1", "S2", "M1", "M2", "M3", "M4"];
-const statuses = [
+const fallbackGrades = ["J1", "J2", "J3", "S1", "S2", "M1", "M2", "M3", "M4"];
+const fallbackStatuses = [
   { value: "active", label: "在籍" },
   { value: "onLeave", label: "休職中" },
   { value: "remote", label: "リモート" },
@@ -44,6 +46,8 @@ export default function EmployeesMasterPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [gradeMasters, setGradeMasters] = useState<GradeMaster[]>([]);
+  const [statusMasters, setStatusMasters] = useState<StatusMaster[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,15 +57,25 @@ export default function EmployeesMasterPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
+  const gradeOptions = gradeMasters.length > 0
+    ? gradeMasters.map((g) => g.code)
+    : fallbackGrades;
+
+  const statusOptions = statusMasters.length > 0
+    ? statusMasters.map((s) => ({ value: s.code, label: s.name }))
+    : fallbackStatuses;
+
   const fetchData = async () => {
     setLoading(true);
-    const [empRes, deptRes, roleRes] = await Promise.all([
+    const [empRes, deptRes, roleRes, gradeRes, statusRes] = await Promise.all([
       supabase
         .from("employees")
         .select("*, departments(name)")
         .order("created_at"),
       supabase.from("departments").select("id, name").order("name"),
       supabase.from("roles").select("id, name").order("name"),
+      supabase.from("grades").select("*").order("rank_order"),
+      supabase.from("statuses").select("*").order("created_at"),
     ]);
     if (empRes.error) setError(empRes.error.message);
     else setEmployees(empRes.data || []);
@@ -69,6 +83,8 @@ export default function EmployeesMasterPage() {
     else setDepartments(deptRes.data || []);
     if (roleRes.error) setError(roleRes.error.message);
     else setRoles(roleRes.data || []);
+    if (gradeRes.data) setGradeMasters(gradeRes.data);
+    if (statusRes.data) setStatusMasters(statusRes.data);
     setLoading(false);
   };
 
@@ -165,6 +181,17 @@ export default function EmployeesMasterPage() {
   );
 
   const statusBadge = (status: string) => {
+    const masterMatch = statusMasters.find((s) => s.code === status);
+    if (masterMatch) {
+      return (
+        <span
+          className="px-2 py-0.5 rounded-full text-xs font-medium text-white"
+          style={{ backgroundColor: masterMatch.color }}
+        >
+          {masterMatch.name}
+        </span>
+      );
+    }
     const map: Record<string, string> = {
       active: "bg-green-100 text-green-800",
       onLeave: "bg-yellow-100 text-yellow-800",
@@ -335,7 +362,7 @@ export default function EmployeesMasterPage() {
                 onChange={(e) => setForm({ ...form, grade: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
               >
-                {grades.map((g) => (
+                {gradeOptions.map((g) => (
                   <option key={g} value={g}>
                     {g}
                   </option>
@@ -351,7 +378,7 @@ export default function EmployeesMasterPage() {
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
               >
-                {statuses.map((s) => (
+                {statusOptions.map((s) => (
                   <option key={s.value} value={s.value}>
                     {s.label}
                   </option>
