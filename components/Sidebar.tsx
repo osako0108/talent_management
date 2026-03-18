@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Database,
   BookOpen,
+  Briefcase,
 } from "lucide-react";
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
 
 const masterItems = [
   { href: "/master/departments", label: "部署マスタ" },
+  { href: "/master/roles", label: "役職マスタ", icon: Briefcase },
   { href: "/master/skills", label: "スキルマスタ" },
   { href: "/master/employees", label: "スタッフマスタ" },
 ];

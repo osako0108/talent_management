@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Plus, Pencil, Trash2, Save, X, Search } from "lucide-react";
 
 type Department = { id: string; name: string };
+type Role = { id: string; name: string };
 
 type Employee = {
   id: string;
@@ -42,9 +43,11 @@ const emptyForm = {
 export default function EmployeesMasterPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showCustomRole, setShowCustomRole] = useState(false);
 
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -52,17 +55,20 @@ export default function EmployeesMasterPage() {
 
   const fetchData = async () => {
     setLoading(true);
-    const [empRes, deptRes] = await Promise.all([
+    const [empRes, deptRes, roleRes] = await Promise.all([
       supabase
         .from("employees")
         .select("*, departments(name)")
         .order("created_at"),
       supabase.from("departments").select("id, name").order("name"),
+      supabase.from("roles").select("id, name").order("name"),
     ]);
     if (empRes.error) setError(empRes.error.message);
     else setEmployees(empRes.data || []);
     if (deptRes.error) setError(deptRes.error.message);
     else setDepartments(deptRes.data || []);
+    if (roleRes.error) setError(roleRes.error.message);
+    else setRoles(roleRes.data || []);
     setLoading(false);
   };
 
@@ -109,6 +115,7 @@ export default function EmployeesMasterPage() {
     setEditingId(null);
     setIsAdding(false);
     setForm(emptyForm);
+    setShowCustomRole(false);
     fetchData();
   };
 
@@ -126,6 +133,8 @@ export default function EmployeesMasterPage() {
   const startEdit = (emp: Employee) => {
     setEditingId(emp.id);
     setIsAdding(false);
+    const isCustomRole = emp.role !== "" && !roles.some((r) => r.name === emp.role);
+    setShowCustomRole(isCustomRole);
     setForm({
       name: emp.name,
       name_kana: emp.name_kana,
@@ -143,6 +152,7 @@ export default function EmployeesMasterPage() {
     setEditingId(null);
     setIsAdding(false);
     setForm(emptyForm);
+    setShowCustomRole(false);
     setError("");
   };
 
@@ -254,13 +264,48 @@ export default function EmployeesMasterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 役職
               </label>
-              <input
-                type="text"
-                value={form.role}
-                onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="エンジニア"
-              />
+              {showCustomRole ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={form.role}
+                    onChange={(e) => setForm({ ...form, role: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="役職名を入力"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCustomRole(false);
+                      setForm({ ...form, role: "" });
+                    }}
+                    className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded-lg whitespace-nowrap"
+                  >
+                    一覧に戻す
+                  </button>
+                </div>
+              ) : (
+                <select
+                  value={roles.some((r) => r.name === form.role) ? form.role : form.role === "" ? "" : "__other__"}
+                  onChange={(e) => {
+                    if (e.target.value === "__other__") {
+                      setShowCustomRole(true);
+                      setForm({ ...form, role: "" });
+                    } else {
+                      setForm({ ...form, role: e.target.value });
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">選択してください</option>
+                  {roles.map((r) => (
+                    <option key={r.id} value={r.name}>
+                      {r.name}
+                    </option>
+                  ))}
+                  <option value="__other__">その他</option>
+                </select>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
