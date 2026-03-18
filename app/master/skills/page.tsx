@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import { Plus, Pencil, Trash2, Save, X, Tag, AlertTriangle, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, Tag, AlertTriangle, RefreshCw, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 
 type SkillCategory = {
   id: string;
@@ -15,6 +15,9 @@ type SkillMaster = {
   category_id: string;
   skill_categories?: { name: string } | null;
 };
+
+type SortKey = "name" | "category";
+type SortDir = "asc" | "desc";
 
 export default function SkillsMasterPage() {
   const [categories, setCategories] = useState<SkillCategory[]>([]);
@@ -37,6 +40,10 @@ export default function SkillsMasterPage() {
 
   // Filter
   const [filterCategoryId, setFilterCategoryId] = useState("");
+
+  // Sorting
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -187,6 +194,36 @@ export default function SkillsMasterPage() {
   const filteredSkills = filterCategoryId
     ? skills.filter((s) => s.category_id === filterCategoryId)
     : skills;
+
+  // Sorting
+  const sortedSkills = [...filteredSkills].sort((a, b) => {
+    if (!sortKey) return 0;
+    let cmp = 0;
+    switch (sortKey) {
+      case "name":
+        cmp = (a.name ?? "").localeCompare(b.name ?? "", "ja");
+        break;
+      case "category":
+        cmp = (a.skill_categories?.name ?? "").localeCompare(b.skill_categories?.name ?? "", "ja");
+        break;
+    }
+    return sortDir === "asc" ? cmp : -cmp;
+  });
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      if (sortDir === "asc") setSortDir("desc");
+      else { setSortKey(null); setSortDir("asc"); }
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
+  const SortIcon = ({ col }: { col: SortKey }) => {
+    if (sortKey !== col) return <ArrowUpDown size={14} className="text-gray-300" />;
+    return sortDir === "asc" ? <ArrowUp size={14} className="text-indigo-500" /> : <ArrowDown size={14} className="text-indigo-500" />;
+  };
 
   if (connectionError) {
     return (
@@ -409,7 +446,7 @@ export default function SkillsMasterPage() {
 
         {loading ? (
           <div className="text-center py-12 text-gray-500">読み込み中...</div>
-        ) : filteredSkills.length === 0 ? (
+        ) : sortedSkills.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             スキルが登録されていません
           </div>
@@ -418,11 +455,21 @@ export default function SkillsMasterPage() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    スキル名
+                  <th
+                    className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100 select-none"
+                    onClick={() => toggleSort("name")}
+                  >
+                    <div className="flex items-center gap-1">
+                      スキル名 <SortIcon col="name" />
+                    </div>
                   </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                    カテゴリ
+                  <th
+                    className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100 select-none"
+                    onClick={() => toggleSort("category")}
+                  >
+                    <div className="flex items-center gap-1">
+                      カテゴリ <SortIcon col="category" />
+                    </div>
                   </th>
                   <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">
                     操作
@@ -430,7 +477,7 @@ export default function SkillsMasterPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredSkills.map((skill) => (
+                {sortedSkills.map((skill) => (
                   <tr
                     key={skill.id}
                     className="border-b border-gray-100 hover:bg-gray-50"

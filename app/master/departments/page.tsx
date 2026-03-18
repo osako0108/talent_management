@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import { Plus, Pencil, Trash2, Save, X, AlertTriangle, RefreshCw } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, AlertTriangle, RefreshCw, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 
 type Department = {
   id: string;
@@ -13,6 +13,9 @@ type Department = {
   description: string;
   color: string;
 };
+
+type SortKey = "name" | "head" | "head_count" | "budget" | "description";
+type SortDir = "asc" | "desc";
 
 const emptyDept: Omit<Department, "id"> = {
   name: "",
@@ -32,6 +35,10 @@ export default function DepartmentsMasterPage() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
+
+  // Sorting
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -142,6 +149,45 @@ export default function DepartmentsMasterPage() {
     setIsAdding(false);
     setForm(emptyDept);
     setError("");
+  };
+
+  // Sorting
+  const sorted = [...departments].sort((a, b) => {
+    if (!sortKey) return 0;
+    let cmp = 0;
+    switch (sortKey) {
+      case "name":
+        cmp = (a.name ?? "").localeCompare(b.name ?? "", "ja");
+        break;
+      case "head":
+        cmp = (a.head ?? "").localeCompare(b.head ?? "", "ja");
+        break;
+      case "head_count":
+        cmp = (a.head_count ?? 0) - (b.head_count ?? 0);
+        break;
+      case "budget":
+        cmp = (a.budget ?? 0) - (b.budget ?? 0);
+        break;
+      case "description":
+        cmp = (a.description ?? "").localeCompare(b.description ?? "", "ja");
+        break;
+    }
+    return sortDir === "asc" ? cmp : -cmp;
+  });
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      if (sortDir === "asc") setSortDir("desc");
+      else { setSortKey(null); setSortDir("asc"); }
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
+  const SortIcon = ({ col }: { col: SortKey }) => {
+    if (sortKey !== col) return <ArrowUpDown size={14} className="text-gray-300" />;
+    return sortDir === "asc" ? <ArrowUp size={14} className="text-indigo-500" /> : <ArrowDown size={14} className="text-indigo-500" />;
   };
 
   if (connectionError) {
@@ -311,7 +357,7 @@ export default function DepartmentsMasterPage() {
 
       {loading ? (
         <div className="text-center py-12 text-gray-500">読み込み中...</div>
-      ) : departments.length === 0 ? (
+      ) : sorted.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           部署が登録されていません
         </div>
@@ -323,20 +369,45 @@ export default function DepartmentsMasterPage() {
                 <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
                   カラー
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                  部署名
+                <th
+                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => toggleSort("name")}
+                >
+                  <div className="flex items-center gap-1">
+                    部署名 <SortIcon col="name" />
+                  </div>
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                  部署長
+                <th
+                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => toggleSort("head")}
+                >
+                  <div className="flex items-center gap-1">
+                    部署長 <SortIcon col="head" />
+                  </div>
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                  目標人数
+                <th
+                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => toggleSort("head_count")}
+                >
+                  <div className="flex items-center gap-1">
+                    目標人数 <SortIcon col="head_count" />
+                  </div>
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                  予算
+                <th
+                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => toggleSort("budget")}
+                >
+                  <div className="flex items-center gap-1">
+                    予算 <SortIcon col="budget" />
+                  </div>
                 </th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
-                  説明
+                <th
+                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => toggleSort("description")}
+                >
+                  <div className="flex items-center gap-1">
+                    説明 <SortIcon col="description" />
+                  </div>
                 </th>
                 <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">
                   操作
@@ -344,7 +415,7 @@ export default function DepartmentsMasterPage() {
               </tr>
             </thead>
             <tbody>
-              {departments.map((dept) => (
+              {sorted.map((dept) => (
                 <tr
                   key={dept.id}
                   className="border-b border-gray-100 hover:bg-gray-50"
