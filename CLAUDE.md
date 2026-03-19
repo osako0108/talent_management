@@ -42,7 +42,7 @@ supabase/
 | departments | 部署マスタ（name, head, head_count, budget, description, color） |
 | skill_categories | スキルカテゴリマスタ（name） |
 | skill_masters | スキルマスタ（name, category_id → skill_categories） |
-| employees | 従業員（name, name_kana, role, department_id, grade, join_date, email, avatar, status） |
+| employees | 従業員（name, name_kana, role, department_id, grade, join_date, email, avatar, status, salary） |
 | employee_skills | 従業員スキル（employee_id, skill_master_id, level 1-5） |
 | employee_performance | パフォーマンス評価（employee_id, year, score 0-100） |
 | employee_projects | プロジェクト担当（employee_id, project_name） |
@@ -69,19 +69,47 @@ active（在籍）、onLeave（休職中）、remote（リモート）
 - Supabase未設定の場合、マスタ管理ページでエラーが出る（既存ページはモックデータで動作）
 - 日本語UI（全テキスト日本語）
 
+## バージョニング
+- サイドバー左下にバージョン番号を表示（`components/Sidebar.tsx`）
+- リリースノートは `RELEASE_NOTES.md` に記録
+- ブランチ名には採番する（例: `claude/001-feature-name-xxx`）
+
 ## 今後の拡張予定（優先度順）
 
-### 直近タスク
+### フェーズ1: 認証基盤（最優先）
 - [ ] ログイン画面の作成（Supabase Auth UI）
 - [ ] ユーザー認証の実装（Supabase Auth + ミドルウェアによるルート保護）
-- [ ] UIの調整（レスポンシブ対応・デザイン改善）
+- [ ] RLSポリシーを `auth.uid()` ベースに変更（自分のデータのみ閲覧可能に）
 
-### 次フェーズ
-- [ ] ページ別・部署別の閲覧権限管理（RLSポリシーをauth.uid()ベースに変更）
-- [ ] 既存ページのSupabase連携（モックデータからの移行）
+### フェーズ2: スタッフ向けマイページ（モバイル対応）
+- [ ] スタッフ用マイページ画面（自分のスキル・評価・プロジェクト閲覧）
+- [ ] レスポンシブUI対応（スマホ最適化）
+- [ ] PWA化（manifest.json・Service Worker・ホーム追加対応）
+- [ ] ロール別アクセス制御（管理者=全機能 / スタッフ=マイページのみ）
+
+### フェーズ3: API層構築・外部連携
+- [ ] API Route Handlers の整備（`app/api/` ディレクトリ）
+- [ ] API認証（APIキー or OAuth）
+- [ ] 外部システム連携用REST API（従業員・スキル・評価データの取得・更新）
+- [ ] Webhook対応（従業員追加・更新時の通知）
+
+### フェーズ4: 機能拡充
+- [ ] UIの調整（デザイン改善）
 - [ ] 従業員スキル・パフォーマンスの一括編集
 - [ ] CSVインポート/エクスポート
 - [ ] 1on1フィードバック・エンゲージメント調査
+
+## 環境構成
+- **本番(PROD)**: Vercel本番環境 + Supabase本番プロジェクト
+- **開発(DEV)**: Vercelプレビュー環境 + Supabase DEVプロジェクト（別プロジェクト）
+- リポジトリは共通、環境変数で接続先を切り替え
+- Vercelのプレビューデプロイ（PR単位）でDEV環境を自動構築
+
+```
+本番: Vercel Production → NEXT_PUBLIC_SUPABASE_URL=本番URL
+DEV:  Vercel Preview    → NEXT_PUBLIC_SUPABASE_URL=DEV用URL
+ローカル: .env.local    → 開発者ごとに設定
+```
 
 ## デプロイ
 - **ホスティング**: Vercel（GitHub連携で自動デプロイ）

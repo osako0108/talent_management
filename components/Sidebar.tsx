@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -9,6 +10,7 @@ import {
   BarChart3,
   Target,
   ChevronRight,
+  ChevronLeft,
   Database,
   BookOpen,
   Sun,
@@ -16,6 +18,8 @@ import {
   Monitor,
 } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
+
+const STORAGE_KEY = "sidebar-collapsed";
 
 const navItems = [
   { href: "/", label: "ダッシュボード", icon: LayoutDashboard },
@@ -26,9 +30,9 @@ const navItems = [
 ];
 
 const masterItems = [
-  { href: "/master/departments", label: "部署マスタ" },
-  { href: "/master/skills", label: "スキルマスタ" },
-  { href: "/master/employees", label: "スタッフマスタ" },
+  { href: "/master/departments", label: "部署マスタ", icon: Database },
+  { href: "/master/skills", label: "スキルマスタ", icon: Database },
+  { href: "/master/employees", label: "スタッフマスタ", icon: Database },
 ];
 
 const utilItems = [
@@ -47,20 +51,45 @@ export default function Sidebar() {
   const currentTheme = themeConfig[theme];
   const ThemeIcon = currentTheme.icon;
 
+  const [collapsed, setCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "true") {
+      setCollapsed(true);
+    }
+    setMounted(true);
+  }, []);
+
+  const toggleCollapsed = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem(STORAGE_KEY, String(next));
+  };
+
   return (
-    <aside className="w-64 bg-gray-900 dark:bg-gray-950 text-white flex flex-col flex-shrink-0">
-      <div className="px-6 py-5 border-b border-gray-700">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
+    <aside
+      className={`${
+        collapsed ? "w-[72px]" : "w-64"
+      } bg-gray-900 dark:bg-gray-950 text-white flex flex-col flex-shrink-0 transition-all duration-300 overflow-hidden`}
+    >
+      {/* ヘッダー */}
+      <div className="px-4 py-5 border-b border-gray-700">
+        <div className={`flex items-center ${collapsed ? "justify-center" : "gap-2 px-2"}`}>
+          <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
             <Users size={18} />
           </div>
-          <div>
-            <div className="font-bold text-sm">タレント管理</div>
-            <div className="text-xs text-gray-400">TalentOS v1.0</div>
-          </div>
+          {!collapsed && (
+            <div className="overflow-hidden whitespace-nowrap">
+              <div className="font-bold text-sm">タレント管理</div>
+              <div className="text-xs text-gray-400">TalentOS v1.0</div>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* ナビゲーション */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
@@ -68,40 +97,56 @@ export default function Sidebar() {
             <Link
               key={href}
               href={href}
+              title={collapsed ? label : undefined}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                collapsed ? "justify-center" : ""
+              } ${
                 active
                   ? "bg-indigo-600 text-white"
                   : "text-gray-300 hover:bg-gray-800 hover:text-white"
               }`}
             >
-              <Icon size={18} />
-              <span className="flex-1">{label}</span>
-              {active && <ChevronRight size={14} />}
+              <Icon size={18} className="flex-shrink-0" />
+              {!collapsed && <span className="flex-1 whitespace-nowrap">{label}</span>}
+              {!collapsed && active && <ChevronRight size={14} />}
             </Link>
           );
         })}
 
-        <div className="pt-3 pb-1 px-3">
-          <div className="flex items-center gap-2 text-xs text-gray-500 font-medium uppercase tracking-wider">
-            <Database size={14} />
-            マスタ管理
+        {/* マスタ管理セクション */}
+        {!collapsed && (
+          <div className="pt-3 pb-1 px-3">
+            <div className="flex items-center gap-2 text-xs text-gray-500 font-medium uppercase tracking-wider">
+              <Database size={14} />
+              マスタ管理
+            </div>
           </div>
-        </div>
-        {masterItems.map(({ href, label }) => {
+        )}
+        {collapsed && <div className="pt-3" />}
+        {masterItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
           return (
             <Link
               key={href}
               href={href}
+              title={collapsed ? label : undefined}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                collapsed ? "justify-center" : ""
+              } ${
                 active
                   ? "bg-indigo-600 text-white"
                   : "text-gray-300 hover:bg-gray-800 hover:text-white"
               }`}
             >
-              <span className="w-[18px]" />
-              <span className="flex-1">{label}</span>
-              {active && <ChevronRight size={14} />}
+              {collapsed ? (
+                <Icon size={18} className="flex-shrink-0" />
+              ) : (
+                <>
+                  <span className="w-[18px]" />
+                  <span className="flex-1 whitespace-nowrap">{label}</span>
+                  {active && <ChevronRight size={14} />}
+                </>
+              )}
             </Link>
           );
         })}
@@ -113,44 +158,79 @@ export default function Sidebar() {
             <Link
               key={href}
               href={href}
+              title={collapsed ? label : undefined}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                collapsed ? "justify-center" : ""
+              } ${
                 active
                   ? "bg-indigo-600 text-white"
                   : "text-gray-300 hover:bg-gray-800 hover:text-white"
               }`}
             >
-              <Icon size={18} />
-              <span className="flex-1">{label}</span>
-              {active && <ChevronRight size={14} />}
+              <Icon size={18} className="flex-shrink-0" />
+              {!collapsed && <span className="flex-1 whitespace-nowrap">{label}</span>}
+              {!collapsed && active && <ChevronRight size={14} />}
             </Link>
           );
         })}
       </nav>
 
-      {/* Theme Toggle */}
+      {/* テーマ切替 */}
       <div className="px-3 pb-2">
         <button
           onClick={() => setTheme(currentTheme.next)}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          title={collapsed ? `${currentTheme.label}モード` : undefined}
+          className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+            collapsed ? "justify-center" : ""
+          }`}
         >
-          <ThemeIcon size={18} />
-          <span className="flex-1 text-left">{currentTheme.label}モード</span>
+          <ThemeIcon size={18} className="flex-shrink-0" />
+          {!collapsed && (
+            <span className="flex-1 text-left whitespace-nowrap">
+              {currentTheme.label}モード
+            </span>
+          )}
         </button>
       </div>
 
+      {/* 折りたたみトグル */}
+      <div className="px-3 pb-2">
+        <button
+          onClick={toggleCollapsed}
+          className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
+            collapsed ? "justify-center" : ""
+          }`}
+          title={collapsed ? "サイドバーを展開" : "サイドバーを折りたたむ"}
+        >
+          {collapsed ? (
+            <ChevronRight size={18} className="flex-shrink-0" />
+          ) : (
+            <>
+              <ChevronLeft size={18} className="flex-shrink-0" />
+              <span className="flex-1 text-left whitespace-nowrap">折りたたむ</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* ユーザープロフィール */}
       <div className="px-4 py-4 border-t border-gray-700">
-        <div className="flex items-center gap-3 px-2">
-          <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-sm font-bold">
+        <div className={`flex items-center ${collapsed ? "justify-center" : "gap-3 px-2"}`}>
+          <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-sm font-bold flex-shrink-0">
             管
           </div>
-          <div>
-            <div className="text-sm font-medium">管理者</div>
-            <div className="text-xs text-gray-400">admin@company.co.jp</div>
+          {!collapsed && (
+            <div className="overflow-hidden whitespace-nowrap">
+              <div className="text-sm font-medium">管理者</div>
+              <div className="text-xs text-gray-400">admin@company.co.jp</div>
+            </div>
+          )}
+        </div>
+        {!collapsed && (
+          <div className="mt-3 text-center text-[10px] text-gray-600">
+            TalentOS v1.1.0
           </div>
-        </div>
-        <div className="mt-3 text-center text-[10px] text-gray-600">
-          TalentOS v1.1.0
-        </div>
+        )}
       </div>
     </aside>
   );
