@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
-import { Plus, Pencil, Trash2, Save, X, Search, AlertTriangle, RefreshCw, Upload, ArrowUp, ArrowDown, ArrowUpDown, ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Save, X, Search, AlertTriangle, RefreshCw, Upload, ArrowUp, ArrowDown, ArrowUpDown, ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { InlineLoading } from "@/components/LoadingSpinner";
 
 type Department = { id: string; name: string };
 
@@ -43,6 +44,16 @@ const emptyForm = {
 };
 
 const MAX_IMAGE_SIZE = 500 * 1024; // 500KB
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Supabaseエラーをユーザー向けメッセージに変換 */
+function toUserError(error: { code?: string; message?: string }, context: "fetch" | "save" | "delete"): string {
+  if (error.code === "23505") return "同じデータが既に存在します";
+  if (error.code === "23503") return "関連データが存在するため操作できません";
+  const labels = { fetch: "データの取得", save: "保存", delete: "削除" };
+  return `${labels[context]}に失敗しました。しばらくしてから再度お試しください。`;
+}
 
 export default function EmployeesMasterPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -63,6 +74,10 @@ export default function EmployeesMasterPage() {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     setConnectionError(false);
@@ -75,15 +90,15 @@ export default function EmployeesMasterPage() {
         supabase.from("departments").select("id, name").order("name"),
       ]);
       if (empRes.error) {
-        setError(empRes.error.message);
-        if (empRes.error.message.includes("fetch") || empRes.error.code === "PGRST301") {
+        setError(toUserError(empRes.error, "fetch"));
+        if (empRes.error.message?.includes("fetch") || empRes.error.code === "PGRST301") {
           setConnectionError(true);
         }
       } else {
         setEmployees(empRes.data || []);
       }
       if (deptRes.error) {
-        setError(deptRes.error.message);
+        setError(toUserError(deptRes.error, "fetch"));
       } else {
         setDepartments(deptRes.data || []);
       }
@@ -110,8 +125,8 @@ export default function EmployeesMasterPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      setError("画像ファイルを選択してください");
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setError("JPG、PNG、GIF、WebP形式の画像ファイルを選択してください");
       return;
     }
 
@@ -145,6 +160,10 @@ export default function EmployeesMasterPage() {
       setError("名前は必須です");
       return;
     }
+    if (form.email && !EMAIL_REGEX.test(form.email)) {
+      setError("有効なメールアドレスを入力してください");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -165,10 +184,10 @@ export default function EmployeesMasterPage() {
           .from("employees")
           .update(payload)
           .eq("id", editingId);
-        if (error) { setError(error.message); setSaving(false); return; }
+        if (error) { setError(toUserError(error, "save")); setSaving(false); return; }
       } else {
         const { error } = await supabase.from("employees").insert(payload);
-        if (error) { setError(error.message); setSaving(false); return; }
+        if (error) { setError(toUserError(error, "save")); setSaving(false); return; }
       }
 
       setEditingId(null);
@@ -187,7 +206,7 @@ export default function EmployeesMasterPage() {
       return;
     try {
       const { error } = await supabase.from("employees").delete().eq("id", id);
-      if (error) { setError(error.message); return; }
+      if (error) { setError(toUserError(error, "delete")); return; }
       fetchData();
     } catch (e) {
       setError(e instanceof Error ? e.message : "削除に失敗しました");
@@ -258,6 +277,13 @@ export default function EmployeesMasterPage() {
     }
     return sortDir === "asc" ? cmp : -cmp;
   });
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(sorted.length / perPage));
+  const paged = sorted.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+  // Reset to page 1 when search or sort changes
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, sortKey, sortDir]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -553,8 +579,8 @@ export default function EmployeesMasterPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-500 dark:text-gray-400">読み込み中...</div>
-      ) : sorted.length === 0 ? (
+        <InlineLoading />
+      ) : paged.length === 0 && sorted.length === 0 ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           {searchQuery
             ? "該当する従業員が見つかりません"
@@ -619,7 +645,7 @@ export default function EmployeesMasterPage() {
               </tr>
             </thead>
             <tbody>
-              {sorted.map((emp) => (
+              {paged.map((emp) => (
                 <tr
                   key={emp.id}
                   className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
@@ -676,6 +702,64 @@ export default function EmployeesMasterPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && sorted.length > 0 && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <span>{sorted.length}件中 {(currentPage - 1) * perPage + 1}-{Math.min(currentPage * perPage, sorted.length)}件を表示</span>
+            <select
+              value={perPage}
+              onChange={(e) => { setPerPage(Number(e.target.value)); setCurrentPage(1); }}
+              className="ml-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm dark:bg-gray-700 dark:text-gray-100"
+            >
+              {[10, 20, 50, 100].map((n) => (
+                <option key={n} value={n}>{n}件/ページ</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+              .reduce<(number | "...")[]>((acc, p, i, arr) => {
+                if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((p, i) =>
+                p === "..." ? (
+                  <span key={`dot-${i}`} className="px-2 text-gray-400 dark:text-gray-500 text-sm">...</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setCurrentPage(p as number)}
+                    className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
+                      currentPage === p
+                        ? "bg-indigo-600 text-white"
+                        : "border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       )}
     </div>

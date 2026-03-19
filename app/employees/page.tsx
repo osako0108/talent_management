@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useAppData } from "@/lib/useAppData";
+import { PageLoading } from "@/components/LoadingSpinner";
 import { statusLabels, statusColors } from "@/lib/data";
 import Link from "next/link";
 import { Search, Filter, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, X } from "lucide-react";
@@ -181,9 +182,7 @@ export default function EmployeesPage() {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center h-64">
-        <p className="text-gray-500 dark:text-gray-400">読み込み中...</p>
-      </div>
+      <PageLoading />
     );
   }
 

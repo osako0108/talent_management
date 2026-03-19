@@ -1,6 +1,7 @@
 "use client";
 
 import { useAppData } from "@/lib/useAppData";
+import { PageLoading } from "@/components/LoadingSpinner";
 import Link from "next/link";
 import { Users, TrendingUp, ChevronRight } from "lucide-react";
 import {
@@ -19,9 +20,7 @@ export default function DepartmentsPage() {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center h-64">
-        <p className="text-gray-500 dark:text-gray-400">読み込み中...</p>
-      </div>
+      <PageLoading />
     );
   }
 

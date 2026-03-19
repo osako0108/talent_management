@@ -86,4 +86,4 @@ active（在籍）、onLeave（休職中）、remote（リモート）
 ## デプロイ
 - **ホスティング**: Vercel（GitHub連携で自動デプロイ）
 - **環境変数**: Vercelダッシュボードで NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY を設定済み
-- **Supabase**: プロジェクトRef: veihgwwmrnmyohzbcsjz
+- **Supabase**: プロジェクトRefは .env.local を参照
