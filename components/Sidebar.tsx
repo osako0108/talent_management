@@ -148,6 +148,9 @@ export default function Sidebar() {
             <div className="text-xs text-gray-400">admin@company.co.jp</div>
           </div>
         </div>
+        <div className="mt-3 text-center text-[10px] text-gray-600">
+          TalentOS v1.1.0
+        </div>
       </div>
     </aside>
   );

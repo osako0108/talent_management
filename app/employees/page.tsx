@@ -303,8 +303,14 @@ export default function EmployeesPage() {
             <Link href={`/employees/${emp.id}`} key={emp.id}>
               <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-600 transition-all cursor-pointer">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-lg font-bold text-indigo-700 dark:text-indigo-300 flex-shrink-0">
-                    {emp.avatar}
+                  <div className="w-12 h-12 rounded-full flex-shrink-0 overflow-hidden">
+                    {emp.avatar && (emp.avatar.startsWith("data:image") || emp.avatar.startsWith("http")) ? (
+                      <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-lg font-bold text-indigo-700 dark:text-indigo-300">
+                        {emp.avatar || emp.name.charAt(0) || "?"}
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">

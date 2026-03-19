@@ -69,8 +69,14 @@ export default function EmployeeDetailPage({
       {/* Profile Header */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-6">
         <div className="flex items-start gap-5">
-          <div className="w-20 h-20 rounded-2xl bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-3xl font-bold text-indigo-700 dark:text-indigo-300 flex-shrink-0">
-            {emp.avatar}
+          <div className="w-20 h-20 rounded-2xl flex-shrink-0 overflow-hidden">
+            {emp.avatar && (emp.avatar.startsWith("data:image") || emp.avatar.startsWith("http")) ? (
+              <img src={emp.avatar} alt={emp.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-3xl font-bold text-indigo-700 dark:text-indigo-300">
+                {emp.avatar || emp.name.charAt(0) || "?"}
+              </div>
+            )}
           </div>
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-3">
