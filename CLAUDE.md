@@ -20,10 +20,6 @@ app/
 ├── departments/page.tsx       # 部署管理（パフォーマンス比較・連携マップ）
 ├── skills/page.tsx            # スキルマトリクス（スキル×メンバー表）
 ├── strategy/page.tsx          # 戦略インサイト（ギャップ分析・離職リスク）
-├── master/
-│   ├── departments/page.tsx   # 部署マスタCRUD
-│   ├── skills/page.tsx        # スキルカテゴリ＆スキルマスタCRUD
-│   └── employees/page.tsx     # スタッフマスタCRUD
 ├── manual/page.tsx            # 操作マニュアル
 ├── layout.tsx                 # ルートレイアウト（サイドバー付き）
 └── globals.css
@@ -54,9 +50,8 @@ supabase/
 - RLS（Row Level Security）が全テーブルで有効
 - 現在は anon ユーザーに全操作を許可するポリシー（認証追加時に変更予定）
 
-## 既存ページのデータソース
-- ダッシュボード、従業員管理、部署管理、スキルマトリクス、戦略インサイト → `lib/data.ts` のモックデータを使用
-- マスタ管理ページ → Supabase から直接取得
+## データソース
+- 全ページ → Supabase から取得（未設定時は `lib/data.ts` のモックデータにフォールバック）
 
 ## グレード体系
 J1-J3（ジュニア）、S1-S2（シニア）、M1-M4（マネージャー）
@@ -66,7 +61,7 @@ active（在籍）、onLeave（休職中）、remote（リモート）
 
 ## 開発メモ
 - `npm run dev` で開発サーバー起動
-- Supabase未設定の場合、マスタ管理ページでエラーが出る（既存ページはモックデータで動作）
+- Supabase未設定の場合はモックデータで動作
 - 日本語UI（全テキスト日本語）
 
 ## バージョニング
