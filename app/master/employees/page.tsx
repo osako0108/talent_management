@@ -18,10 +18,11 @@ type Employee = {
   email: string;
   avatar: string;
   status: string;
+  salary: number;
   departments?: { name: string } | null;
 };
 
-type SortKey = "name" | "role" | "department" | "grade" | "status" | "join_date";
+type SortKey = "name" | "role" | "department" | "grade" | "status" | "join_date" | "salary";
 type SortDir = "asc" | "desc";
 
 const grades = ["J1", "J2", "J3", "S1", "S2", "M1", "M2", "M3", "M4"];
@@ -41,6 +42,7 @@ const emptyForm = {
   email: "",
   avatar: "",
   status: "active",
+  salary: 0,
 };
 
 const MAX_IMAGE_SIZE = 500 * 1024; // 500KB
@@ -177,6 +179,7 @@ export default function EmployeesMasterPage() {
         email: form.email,
         avatar: form.avatar || form.name.charAt(0) || "?",
         status: form.status,
+        salary: form.salary,
       };
 
       if (editingId) {
@@ -226,6 +229,7 @@ export default function EmployeesMasterPage() {
       email: emp.email ?? "",
       avatar: emp.avatar ?? "",
       status: emp.status ?? "active",
+      salary: emp.salary ?? 0,
     });
     setImagePreview(isImageAvatar(emp.avatar) ? emp.avatar : null);
   };
@@ -273,6 +277,9 @@ export default function EmployeesMasterPage() {
         break;
       case "join_date":
         cmp = (a.join_date ?? "").localeCompare(b.join_date ?? "");
+        break;
+      case "salary":
+        cmp = (a.salary ?? 0) - (b.salary ?? 0);
         break;
     }
     return sortDir === "asc" ? cmp : -cmp;
@@ -501,6 +508,21 @@ export default function EmployeesMasterPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                人件費（円/年）
+              </label>
+              <input
+                type="number"
+                value={form.salary}
+                onChange={(e) =>
+                  setForm({ ...form, salary: Number(e.target.value) || 0 })
+                }
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
+                placeholder="5000000"
+                min="0"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 メール
               </label>
               <input
@@ -639,6 +661,14 @@ export default function EmployeesMasterPage() {
                     入社日 <SortIcon col="join_date" />
                   </div>
                 </th>
+                <th
+                  className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 select-none"
+                  onClick={() => toggleSort("salary")}
+                >
+                  <div className="flex items-center gap-1">
+                    人件費 <SortIcon col="salary" />
+                  </div>
+                </th>
                 <th className="text-right px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400">
                   操作
                 </th>
@@ -679,6 +709,9 @@ export default function EmployeesMasterPage() {
                   <td className="px-4 py-3">{statusBadge(emp.status)}</td>
                   <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                     {emp.join_date || "-"}
+                  </td>
+                  <td className="px-4 py-3 text-sm dark:text-gray-300">
+                    {emp.salary ? `${(emp.salary / 10000).toLocaleString()}万円` : "-"}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
