@@ -118,6 +118,7 @@ export function useAppData(): UseAppDataResult {
           email: (e.email as string) || "",
           avatar: (e.avatar as string) || ((e.name as string) || "?").charAt(0),
           status: ((e.status as string) || "active") as "active" | "onLeave" | "remote",
+          leftDate: (e.left_date as string) || "",
           skills: (skillsByEmp[id] || []) as Employee["skills"],
           performance: (perfByEmp[id] || []).sort((a, b) => a.year - b.year),
           projects: projByEmp[id] || [],

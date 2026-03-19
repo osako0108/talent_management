@@ -87,6 +87,11 @@ export default function EmployeeDetailPage({
               >
                 {statusLabels[emp.status]}
               </span>
+              {emp.leftDate && (
+                <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300">
+                  退職済
+                </span>
+              )}
             </div>
             <p className="text-gray-600 dark:text-gray-400 mt-1">{emp.role}</p>
             <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500 dark:text-gray-400">
@@ -99,6 +104,11 @@ export default function EmployeeDetailPage({
               <span className="flex items-center gap-1.5">
                 <Calendar size={14} /> 入社: {emp.joinDate}
               </span>
+              {emp.leftDate && (
+                <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                  <Calendar size={14} /> 退職: {emp.leftDate}
+                </span>
+              )}
               <span className="flex items-center gap-1.5">
                 <Mail size={14} /> {emp.email}
               </span>
