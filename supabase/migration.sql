@@ -143,3 +143,32 @@ INSERT INTO skill_categories (name) VALUES
   ('技術'), ('インフラ'), ('マネジメント'), ('営業'),
   ('コミュニケーション'), ('マーケティング'), ('HR'),
   ('ファイナンス'), ('プロダクト'), ('デザイン'), ('ツール');
+
+-- ========================================
+-- スキルタグ
+-- ========================================
+CREATE TABLE IF NOT EXISTS skill_tags (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  color TEXT DEFAULT '#6366f1',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS skill_master_tags (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  skill_master_id UUID NOT NULL REFERENCES skill_masters(id) ON DELETE CASCADE,
+  skill_tag_id UUID NOT NULL REFERENCES skill_tags(id) ON DELETE CASCADE,
+  UNIQUE(skill_master_id, skill_tag_id)
+);
+
+ALTER TABLE skill_tags ENABLE ROW LEVEL SECURITY;
+ALTER TABLE skill_master_tags ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all on skill_tags" ON skill_tags FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on skill_master_tags" ON skill_master_tags FOR ALL USING (true) WITH CHECK (true);
+
+INSERT INTO skill_tags (name, color) VALUES
+  ('開発', '#6366f1'),
+  ('希少', '#f59e0b'),
+  ('必須', '#ef4444'),
+  ('新規', '#10b981')
+ON CONFLICT (name) DO NOTHING;

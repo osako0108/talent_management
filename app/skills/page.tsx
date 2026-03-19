@@ -16,6 +16,19 @@ const LEVEL_BG = [
   "bg-indigo-600 text-white",
 ];
 
+type SkillTag = {
+  id: string;
+  name: string;
+  color: string;
+};
+
+type SkillMasterTag = {
+  skill_master_id: string;
+  skill_tag_id: string;
+  skill_masters: { name: string };
+  skill_tags: SkillTag;
+};
+
 type SkillCategory = { id: string; name: string };
 type SkillMaster = {
   id: string;
@@ -23,6 +36,14 @@ type SkillMaster = {
   category_id: string;
   skill_categories?: { name: string } | null;
 };
+
+// Default fallback tags when Supabase is not connected
+const FALLBACK_TAGS: SkillTag[] = [
+  { id: "1", name: "開発", color: "#6366f1" },
+  { id: "2", name: "希少", color: "#f59e0b" },
+  { id: "3", name: "必須", color: "#ef4444" },
+  { id: "4", name: "新規", color: "#10b981" },
+];
 
 /** Supabaseエラーをユーザー向けメッセージに変換 */
 function toUserError(error: { code?: string; message?: string }, context: "save" | "delete"): string {
@@ -39,6 +60,43 @@ export default function SkillsPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [deptFilter, setDeptFilter] = useState("all");
   const [minLevel, setMinLevel] = useState(1);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [tags, setTags] = useState<SkillTag[]>(FALLBACK_TAGS);
+  const [skillTagMap, setSkillTagMap] = useState<Record<string, SkillTag[]>>({});
+
+  // Fetch tags from Supabase (with fallback)
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const { supabase } = await import("@/lib/supabase");
+        const [tagRes, mappingRes] = await Promise.all([
+          supabase.from("skill_tags").select("*").order("name"),
+          supabase
+            .from("skill_master_tags")
+            .select("skill_master_id, skill_tag_id, skill_masters(name), skill_tags(*)")
+        ]);
+
+        if (tagRes.data && tagRes.data.length > 0) {
+          setTags(tagRes.data);
+        }
+
+        if (mappingRes.data) {
+          const map: Record<string, SkillTag[]> = {};
+          (mappingRes.data as unknown as SkillMasterTag[]).forEach((mt) => {
+            const skillName = mt.skill_masters?.name;
+            if (skillName && mt.skill_tags) {
+              if (!map[skillName]) map[skillName] = [];
+              map[skillName].push(mt.skill_tags);
+            }
+          });
+          setSkillTagMap(map);
+        }
+      } catch {
+        // Supabase not configured, use fallback tags
+      }
+    };
+    fetchTags();
+  }, []);
 
   // CRUD state
   const [crudError, setCrudError] = useState("");
@@ -203,8 +261,17 @@ export default function SkillsPage() {
         data.holders.reduce((s, h) => s + h.level, 0) / data.holders.length,
       maxLevel: Math.max(...data.holders.map((h) => h.level)),
       count: data.holders.length,
+      tags: skillTagMap[name] || [],
     }));
-  }, [employees]);
+  }, [employees, skillTagMap]);
+
+  const toggleTag = (tagId: string) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(tagId)
+        ? prev.filter((id) => id !== tagId)
+        : [...prev, tagId]
+    );
+  };
 
   const filtered = useMemo(
     () =>
@@ -215,9 +282,12 @@ export default function SkillsPage() {
           deptFilter === "all" ||
           sk.holders.some((h) => h.dept === deptFilter);
         const matchLevel = sk.maxLevel >= minLevel;
-        return matchCat && matchDept && matchLevel;
+        const matchTags =
+          selectedTagIds.length === 0 ||
+          sk.tags.some((t) => selectedTagIds.includes(t.id));
+        return matchCat && matchDept && matchLevel && matchTags;
       }),
-    [allSkills, categoryFilter, deptFilter, minLevel]
+    [allSkills, categoryFilter, deptFilter, minLevel, selectedTagIds]
   );
 
   // スキルマトリックス: 従業員 × スキル
@@ -432,7 +502,7 @@ export default function SkillsPage() {
       )}
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 items-center">
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
@@ -475,6 +545,37 @@ export default function SkillsPage() {
             </button>
           ))}
         </div>
+
+        {/* Tag filter */}
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-gray-500 dark:text-gray-400">タグ:</span>
+          {tags.map((tag) => (
+            <button
+              key={tag.id}
+              onClick={() => toggleTag(tag.id)}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all border-2 ${
+                selectedTagIds.includes(tag.id)
+                  ? "text-white border-transparent"
+                  : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+              }`}
+              style={
+                selectedTagIds.includes(tag.id)
+                  ? { backgroundColor: tag.color, borderColor: tag.color }
+                  : { color: tag.color }
+              }
+            >
+              {tag.name}
+            </button>
+          ))}
+          {selectedTagIds.length > 0 && (
+            <button
+              onClick={() => setSelectedTagIds([])}
+              className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline"
+            >
+              クリア
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Skill Cards */}
@@ -492,6 +593,19 @@ export default function SkillsPage() {
                     {skill.name}
                   </h3>
                   <span className="text-xs text-gray-400 dark:text-gray-500">{skill.category}</span>
+                  {skill.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {skill.tags.map((tag) => (
+                        <span
+                          key={tag.id}
+                          className="px-1.5 py-0.5 rounded-full text-white"
+                          style={{ backgroundColor: tag.color, fontSize: "10px" }}
+                        >
+                          {tag.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-1 ml-1 flex-shrink-0">
                   <span className="text-lg font-bold text-indigo-600">
