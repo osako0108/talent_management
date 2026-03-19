@@ -131,8 +131,8 @@ export function useAppData(): UseAppDataResult {
       setEmployees(empList);
       setSkillCategories(cats.length > 0 ? cats : mockSkillCategories);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "データの取得に失敗しました";
-      setError(msg);
+      console.error("Data fetch error:", err);
+      setError("データの取得に失敗しました。しばらくしてから再度お試しください。");
       // エラー時はモックデータを使用
       setEmployees(mockEmployees);
       setDepartments(mockDepartments);

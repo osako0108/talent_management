@@ -44,6 +44,16 @@ const emptyForm = {
 };
 
 const MAX_IMAGE_SIZE = 500 * 1024; // 500KB
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Supabaseエラーをユーザー向けメッセージに変換 */
+function toUserError(error: { code?: string; message?: string }, context: "fetch" | "save" | "delete"): string {
+  if (error.code === "23505") return "同じデータが既に存在します";
+  if (error.code === "23503") return "関連データが存在するため操作できません";
+  const labels = { fetch: "データの取得", save: "保存", delete: "削除" };
+  return `${labels[context]}に失敗しました。しばらくしてから再度お試しください。`;
+}
 
 export default function EmployeesMasterPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -80,15 +90,15 @@ export default function EmployeesMasterPage() {
         supabase.from("departments").select("id, name").order("name"),
       ]);
       if (empRes.error) {
-        setError(empRes.error.message);
-        if (empRes.error.message.includes("fetch") || empRes.error.code === "PGRST301") {
+        setError(toUserError(empRes.error, "fetch"));
+        if (empRes.error.message?.includes("fetch") || empRes.error.code === "PGRST301") {
           setConnectionError(true);
         }
       } else {
         setEmployees(empRes.data || []);
       }
       if (deptRes.error) {
-        setError(deptRes.error.message);
+        setError(toUserError(deptRes.error, "fetch"));
       } else {
         setDepartments(deptRes.data || []);
       }
@@ -115,8 +125,8 @@ export default function EmployeesMasterPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      setError("画像ファイルを選択してください");
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setError("JPG、PNG、GIF、WebP形式の画像ファイルを選択してください");
       return;
     }
 
@@ -150,6 +160,10 @@ export default function EmployeesMasterPage() {
       setError("名前は必須です");
       return;
     }
+    if (form.email && !EMAIL_REGEX.test(form.email)) {
+      setError("有効なメールアドレスを入力してください");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -170,10 +184,10 @@ export default function EmployeesMasterPage() {
           .from("employees")
           .update(payload)
           .eq("id", editingId);
-        if (error) { setError(error.message); setSaving(false); return; }
+        if (error) { setError(toUserError(error, "save")); setSaving(false); return; }
       } else {
         const { error } = await supabase.from("employees").insert(payload);
-        if (error) { setError(error.message); setSaving(false); return; }
+        if (error) { setError(toUserError(error, "save")); setSaving(false); return; }
       }
 
       setEditingId(null);
@@ -192,7 +206,7 @@ export default function EmployeesMasterPage() {
       return;
     try {
       const { error } = await supabase.from("employees").delete().eq("id", id);
-      if (error) { setError(error.message); return; }
+      if (error) { setError(toUserError(error, "delete")); return; }
       fetchData();
     } catch (e) {
       setError(e instanceof Error ? e.message : "削除に失敗しました");

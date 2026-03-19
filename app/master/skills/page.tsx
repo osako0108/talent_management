@@ -20,6 +20,16 @@ type SkillMaster = {
 type SortKey = "name" | "category";
 type SortDir = "asc" | "desc";
 
+/** Supabaseエラーをユーザー向けメッセージに変換 */
+function toUserError(error: { code?: string; message?: string }, context: "fetch" | "save" | "delete"): string {
+  if (error.code === "23505") {
+    return context === "save" ? "同じ名前が既に存在します" : "重複エラーが発生しました";
+  }
+  if (error.code === "23503") return "関連データが存在するため操作できません";
+  const labels = { fetch: "データの取得", save: "保存", delete: "削除" };
+  return `${labels[context]}に失敗しました。しばらくしてから再度お試しください。`;
+}
+
 export default function SkillsMasterPage() {
   const [categories, setCategories] = useState<SkillCategory[]>([]);
   const [skills, setSkills] = useState<SkillMaster[]>([]);
@@ -58,15 +68,15 @@ export default function SkillsMasterPage() {
           .order("name"),
       ]);
       if (catRes.error) {
-        setError(catRes.error.message);
-        if (catRes.error.message.includes("fetch") || catRes.error.code === "PGRST301") {
+        setError(toUserError(catRes.error, "fetch"));
+        if (catRes.error.message?.includes("fetch") || catRes.error.code === "PGRST301") {
           setConnectionError(true);
         }
       } else {
         setCategories(catRes.data || []);
       }
       if (skillRes.error) {
-        setError(skillRes.error.message);
+        setError(toUserError(skillRes.error, "fetch"));
       } else {
         setSkills(skillRes.data || []);
       }
@@ -103,13 +113,13 @@ export default function SkillsMasterPage() {
           .from("skill_categories")
           .update({ name: catName })
           .eq("id", editingCatId);
-        if (error) { setError(error.message); setSaving(false); return; }
+        if (error) { setError(toUserError(error, "save")); setSaving(false); return; }
       } else {
         const { error } = await supabase
           .from("skill_categories")
           .insert({ name: catName });
         if (error) {
-          setError(error.code === "23505" ? "同じ名前のカテゴリが既に存在します" : error.message);
+          setError(error.code === "23505" ? "同じ名前のカテゴリが既に存在します" : toUserError(error, "save"));
           setSaving(false);
           return;
         }
@@ -132,10 +142,10 @@ export default function SkillsMasterPage() {
         .from("skill_categories")
         .delete()
         .eq("id", id);
-      if (error) { setError(error.message); return; }
+      if (error) { setError(toUserError(error, "delete")); return; }
       fetchData();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "削除に失敗しました");
+      setError("削除に失敗しました。しばらくしてから再度お試しください。");
     }
   };
 
@@ -158,11 +168,11 @@ export default function SkillsMasterPage() {
           .from("skill_masters")
           .update(payload)
           .eq("id", editingSkillId);
-        if (error) { setError(error.message); setSaving(false); return; }
+        if (error) { setError(toUserError(error, "save")); setSaving(false); return; }
       } else {
         const { error } = await supabase.from("skill_masters").insert(payload);
         if (error) {
-          setError(error.code === "23505" ? "同じカテゴリ内に同名のスキルが既に存在します" : error.message);
+          setError(error.code === "23505" ? "同じカテゴリ内に同名のスキルが既に存在します" : toUserError(error, "save"));
           setSaving(false);
           return;
         }
@@ -185,10 +195,10 @@ export default function SkillsMasterPage() {
         .from("skill_masters")
         .delete()
         .eq("id", id);
-      if (error) { setError(error.message); return; }
+      if (error) { setError(toUserError(error, "delete")); return; }
       fetchData();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "削除に失敗しました");
+      setError("削除に失敗しました。しばらくしてから再度お試しください。");
     }
   };
 

@@ -27,6 +27,14 @@ const emptyDept: Omit<Department, "id"> = {
   color: "#6366f1",
 };
 
+/** Supabaseエラーをユーザー向けメッセージに変換 */
+function toUserError(error: { code?: string; message?: string }, context: "fetch" | "save" | "delete"): string {
+  if (error.code === "23505") return "同じ名前の部署が既に存在します";
+  if (error.code === "23503") return "関連データが存在するため操作できません";
+  const labels = { fetch: "データの取得", save: "保存", delete: "削除" };
+  return `${labels[context]}に失敗しました。しばらくしてから再度お試しください。`;
+}
+
 export default function DepartmentsMasterPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,8 +58,8 @@ export default function DepartmentsMasterPage() {
         .select("*")
         .order("created_at");
       if (error) {
-        setError(error.message);
-        if (error.message.includes("fetch") || error.message.includes("network") || error.code === "PGRST301") {
+        setError(toUserError(error, "fetch"));
+        if (error.message?.includes("fetch") || error.message?.includes("network") || error.code === "PGRST301") {
           setConnectionError(true);
         }
       } else {
@@ -91,18 +99,14 @@ export default function DepartmentsMasterPage() {
           .update(form)
           .eq("id", editingId);
         if (error) {
-          setError(error.message);
+          setError(toUserError(error, "save"));
           setSaving(false);
           return;
         }
       } else {
         const { error } = await supabase.from("departments").insert(form);
         if (error) {
-          setError(
-            error.code === "23505"
-              ? "同じ名前の部署が既に存在します"
-              : error.message
-          );
+          setError(toUserError(error, "save"));
           setSaving(false);
           return;
         }
@@ -123,7 +127,7 @@ export default function DepartmentsMasterPage() {
     try {
       const { error } = await supabase.from("departments").delete().eq("id", id);
       if (error) {
-        setError(error.message);
+        setError(toUserError(error, "delete"));
         return;
       }
       fetchData();

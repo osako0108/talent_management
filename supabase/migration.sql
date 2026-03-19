@@ -109,6 +109,14 @@ CREATE TRIGGER employees_updated_at
 -- 認証なしフェーズ: anon ユーザーに全操作を許可
 -- ※ 認証追加時にポリシーを変更してください
 -- ========================================
+-- TODO: 認証実装時に以下を実施すること
+--   1. 下記の "Allow all" ポリシーを全て DROP する
+--   2. auth.uid() ベースのポリシーに置き換える
+--     例: CREATE POLICY "Authenticated read" ON employees
+--          FOR SELECT USING (auth.role() = 'authenticated');
+--   3. 管理者ロール (M1-M4) のみ INSERT/UPDATE/DELETE を許可
+--   4. 一般ユーザーは自部署のデータのみ閲覧可能にする
+-- ========================================
 ALTER TABLE departments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skill_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skill_masters ENABLE ROW LEVEL SECURITY;
