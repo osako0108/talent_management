@@ -320,9 +320,13 @@ export default function StrategyPage() {
           <div className="space-y-3">
             {retentionRisks.map((emp) => (
               <div key={emp.id} className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center font-bold text-indigo-700 dark:text-indigo-300 flex-shrink-0">
-                  {emp.avatar}
-                </div>
+                {emp.avatar && (emp.avatar.startsWith("data:image") || emp.avatar.startsWith("http")) ? (
+                  <img src={emp.avatar} alt={emp.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center font-bold text-indigo-700 dark:text-indigo-300 flex-shrink-0">
+                    {emp.avatar || emp.name.charAt(0) || "?"}
+                  </div>
+                )}
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium dark:text-gray-200">{emp.name}</span>

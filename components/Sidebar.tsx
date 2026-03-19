@@ -67,18 +67,27 @@ export default function Sidebar() {
         collapsed ? "w-[72px]" : "w-64"
       } bg-gray-900 dark:bg-gray-950 text-white flex flex-col flex-shrink-0 transition-all duration-300 overflow-hidden`}
     >
-      {/* ヘッダー */}
+      {/* ヘッダー + 折りたたみトグル */}
       <div className="px-4 py-5 border-b border-gray-700">
-        <div className={`flex items-center ${collapsed ? "justify-center" : "gap-2 px-2"}`}>
-          <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Users size={18} />
-          </div>
-          {!collapsed && (
-            <div className="overflow-hidden whitespace-nowrap">
-              <div className="font-bold text-sm">タレント管理</div>
-              <div className="text-xs text-gray-400">TalentOS v1.0</div>
+        <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between px-2"}`}>
+          <div className={`flex items-center ${collapsed ? "" : "gap-2"}`}>
+            <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Users size={18} />
             </div>
-          )}
+            {!collapsed && (
+              <div className="overflow-hidden whitespace-nowrap">
+                <div className="font-bold text-sm">タレント管理</div>
+                <div className="text-xs text-gray-400">TalentOS v1.0</div>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={toggleCollapsed}
+            className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+            title={collapsed ? "サイドバーを展開" : "サイドバーを折りたたむ"}
+          >
+            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
         </div>
       </div>
 
@@ -144,26 +153,6 @@ export default function Sidebar() {
             <span className="flex-1 text-left whitespace-nowrap">
               {currentTheme.label}モード
             </span>
-          )}
-        </button>
-      </div>
-
-      {/* 折りたたみトグル */}
-      <div className="px-3 pb-2">
-        <button
-          onClick={toggleCollapsed}
-          className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors ${
-            collapsed ? "justify-center" : ""
-          }`}
-          title={collapsed ? "サイドバーを展開" : "サイドバーを折りたたむ"}
-        >
-          {collapsed ? (
-            <ChevronRight size={18} className="flex-shrink-0" />
-          ) : (
-            <>
-              <ChevronLeft size={18} className="flex-shrink-0" />
-              <span className="flex-1 text-left whitespace-nowrap">折りたたむ</span>
-            </>
           )}
         </button>
       </div>
