@@ -20,6 +20,7 @@ export type Employee = {
   performance: { year: number; score: number }[];
   projects: string[];
   status: "active" | "onLeave" | "remote";
+  leftDate: string;
 };
 
 export type Department = {
@@ -116,6 +117,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 88 },
       { year: 2024, score: 92 },
     ],
+    leftDate: "",
   },
   {
     id: "e002",
@@ -142,6 +144,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 84 },
       { year: 2024, score: 89 },
     ],
+    leftDate: "",
   },
   {
     id: "e003",
@@ -167,6 +170,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 83 },
       { year: 2024, score: 87 },
     ],
+    leftDate: "",
   },
   {
     id: "e004",
@@ -192,6 +196,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 85 },
       { year: 2024, score: 88 },
     ],
+    leftDate: "",
   },
   {
     id: "e005",
@@ -217,6 +222,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 80 },
       { year: 2024, score: 85 },
     ],
+    leftDate: "",
   },
   // Sales
   {
@@ -243,6 +249,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 93 },
       { year: 2024, score: 95 },
     ],
+    leftDate: "",
   },
   {
     id: "s002",
@@ -267,6 +274,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 86 },
       { year: 2024, score: 88 },
     ],
+    leftDate: "",
   },
   {
     id: "s003",
@@ -291,6 +299,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 87 },
       { year: 2024, score: 90 },
     ],
+    leftDate: "",
   },
   // Marketing
   {
@@ -317,6 +326,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 88 },
       { year: 2024, score: 91 },
     ],
+    leftDate: "",
   },
   {
     id: "m002",
@@ -341,6 +351,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 82 },
       { year: 2024, score: 85 },
     ],
+    leftDate: "",
   },
   // HR
   {
@@ -367,6 +378,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 90 },
       { year: 2024, score: 92 },
     ],
+    leftDate: "",
   },
   {
     id: "h002",
@@ -391,6 +403,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 77 },
       { year: 2024, score: 81 },
     ],
+    leftDate: "",
   },
   // Finance
   {
@@ -417,6 +430,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 91 },
       { year: 2024, score: 93 },
     ],
+    leftDate: "",
   },
   // Product
   {
@@ -443,6 +457,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 89 },
       { year: 2024, score: 92 },
     ],
+    leftDate: "",
   },
   {
     id: "p002",
@@ -468,6 +483,7 @@ export const employees: Employee[] = [
       { year: 2023, score: 85 },
       { year: 2024, score: 87 },
     ],
+    leftDate: "",
   },
 ];
 
