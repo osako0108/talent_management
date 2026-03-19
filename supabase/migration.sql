@@ -50,6 +50,8 @@ CREATE TABLE employees (
   email TEXT NOT NULL DEFAULT '',
   avatar TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'onLeave', 'remote')),
+  salary BIGINT NOT NULL DEFAULT 0,
+  left_date DATE,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -108,6 +110,14 @@ CREATE TRIGGER employees_updated_at
 -- RLS（Row Level Security）ポリシー
 -- 認証なしフェーズ: anon ユーザーに全操作を許可
 -- ※ 認証追加時にポリシーを変更してください
+-- ========================================
+-- TODO: 認証実装時に以下を実施すること
+--   1. 下記の "Allow all" ポリシーを全て DROP する
+--   2. auth.uid() ベースのポリシーに置き換える
+--     例: CREATE POLICY "Authenticated read" ON employees
+--          FOR SELECT USING (auth.role() = 'authenticated');
+--   3. 管理者ロール (M1-M4) のみ INSERT/UPDATE/DELETE を許可
+--   4. 一般ユーザーは自部署のデータのみ閲覧可能にする
 -- ========================================
 ALTER TABLE departments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skill_categories ENABLE ROW LEVEL SECURITY;
