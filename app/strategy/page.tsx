@@ -14,7 +14,8 @@
  *   projects テーブルから集計する設計が最適
  */
 
-import { employees, departments } from "@/lib/data";
+import { useAppData } from "@/lib/useAppData";
+import { PageLoading } from "@/components/LoadingSpinner";
 import {
   BarChart,
   Bar,
@@ -33,6 +34,14 @@ import {
 import { AlertTriangle, TrendingUp, Users, Clock } from "lucide-react";
 
 export default function StrategyPage() {
+  const { employees, departments, loading } = useAppData();
+
+  if (loading) {
+    return (
+      <PageLoading />
+    );
+  }
+
   // --- 在籍年数計算 ---
   const today = new Date("2026-03-17");
   const empWithTenure = employees.map((e) => {
@@ -46,12 +55,9 @@ export default function StrategyPage() {
   });
 
   // --- 独り立ち期間の擬似推定
-  // 実DB導入後はプロジェクトアサイン履歴から算出
-  // 現在はグレードと入社日から推定
   const onboardingData = departments.map((dept) => {
     const members = empWithTenure.filter((e) => e.department === dept.name);
     const juniors = members.filter((e) => e.grade.startsWith("J"));
-    // ジュニアの平均在籍月数をオンボーディング期間の目安とする
     const avgOnboarding =
       juniors.length > 0
         ? juniors.reduce((s, e) => s + Math.min(e.tenureMonths, 24), 0) /
@@ -87,7 +93,7 @@ export default function StrategyPage() {
       ) / 10,
   }));
 
-  // --- スキルギャップ（目標レベル - 現状平均）---
+  // --- スキルギャップ ---
   const skillGaps = [
     { skill: "データサイエンス", current: 0, target: 3, category: "技術" },
     { skill: "AI/ML", current: 0.5, target: 3, category: "技術" },
@@ -107,15 +113,13 @@ export default function StrategyPage() {
     { skill: "財務リテラシー", current: 2, target: 3.5, category: "ファイナンス" },
   ].map((g) => ({ ...g, gap: g.target - g.current }));
 
-  // --- 退職リスク（擬似スコア: パフォーマンス低下 + 休職中）---
-  // 実DB導入後: アンケートや1on1データから算出
+  // --- 退職リスク ---
   const retentionRisks = empWithTenure
     .map((e) => {
       const perfDrop =
         (e.performance.find((p) => p.year === 2022)?.score ?? 0) -
         (e.performance.find((p) => p.year === 2024)?.score ?? 0);
       const leaveRisk = e.status === "onLeave" ? 30 : 0;
-      // 短期間でスコアが下がっている場合リスク高
       const riskScore = Math.max(0, perfDrop * 2 + leaveRisk);
       return { ...e, riskScore };
     })
@@ -153,8 +157,8 @@ export default function StrategyPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">戦略インサイト</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">戦略インサイト</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">
           人材データをもとに経営戦略を立案するためのインサイト
         </p>
       </div>
@@ -163,28 +167,28 @@ export default function StrategyPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <InsightCard
           icon={<TrendingUp size={18} className="text-indigo-600" />}
-          bg="bg-indigo-50"
+          bg="bg-indigo-50 dark:bg-indigo-900/30"
           title="全社平均評価 (2024)"
           value={`${(employees.reduce((s, e) => s + (e.performance.find((p) => p.year === 2024)?.score ?? 0), 0) / employees.length).toFixed(1)}点`}
           sub="前年比 +3.2点"
         />
         <InsightCard
           icon={<Clock size={18} className="text-amber-600" />}
-          bg="bg-amber-50"
+          bg="bg-amber-50 dark:bg-amber-900/30"
           title="平均在籍年数"
           value={`${(empWithTenure.reduce((s, e) => s + e.tenureYears, 0) / empWithTenure.length).toFixed(1)}年`}
           sub="定着率は良好"
         />
         <InsightCard
           icon={<Users size={18} className="text-emerald-600" />}
-          bg="bg-emerald-50"
+          bg="bg-emerald-50 dark:bg-emerald-900/30"
           title="推定退職リスク者"
           value={`${retentionRisks.filter((e) => e.riskScore > 0).length}名`}
           sub="要フォローアップ"
         />
         <InsightCard
           icon={<AlertTriangle size={18} className="text-rose-600" />}
-          bg="bg-rose-50"
+          bg="bg-rose-50 dark:bg-rose-900/30"
           title="スキルギャップ数"
           value={`${skillGaps.filter((g) => g.gap >= 2).length}件`}
           sub="緊急度の高いギャップ"
@@ -194,8 +198,8 @@ export default function StrategyPage() {
       {/* Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* パフォーマンス推移 */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <h2 className="font-semibold text-gray-800 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">
             全社パフォーマンス推移
           </h2>
           <ResponsiveContainer width="100%" height={200}>
@@ -216,11 +220,11 @@ export default function StrategyPage() {
         </div>
 
         {/* 独り立ち期間 */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <h2 className="font-semibold text-gray-800 mb-1">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">
             部署別・独り立ちまでの推定期間
           </h2>
-          <p className="text-xs text-gray-400 mb-4">
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
             ※ 現在はサンプル推定値。DB導入後はプロジェクトアサイン履歴から算出予定
           </p>
           <ResponsiveContainer width="100%" height={180}>
@@ -251,8 +255,8 @@ export default function StrategyPage() {
       {/* Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* スキルギャップ */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <h2 className="font-semibold text-gray-800 mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">
             スキルギャップ分析
           </h2>
           <div className="space-y-3">
@@ -260,8 +264,8 @@ export default function StrategyPage() {
               <div key={g.skill}>
                 <div className="flex justify-between text-sm mb-1">
                   <div>
-                    <span className="font-medium text-gray-800">{g.skill}</span>
-                    <span className="text-xs text-gray-400 ml-2">
+                    <span className="font-medium text-gray-800 dark:text-gray-200">{g.skill}</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500 ml-2">
                       {g.category}
                     </span>
                   </div>
@@ -279,24 +283,24 @@ export default function StrategyPage() {
                   </span>
                 </div>
                 <div className="flex gap-2 items-center">
-                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-indigo-400 rounded-full"
                       style={{ width: `${(g.current / 5) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs text-gray-400 w-12 text-right">
+                  <span className="text-xs text-gray-400 dark:text-gray-500 w-12 text-right">
                     現状 {g.current}
                   </span>
                 </div>
                 <div className="flex gap-2 items-center mt-0.5">
-                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-rose-300 rounded-full"
                       style={{ width: `${(g.target / 5) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs text-gray-400 w-12 text-right">
+                  <span className="text-xs text-gray-400 dark:text-gray-500 w-12 text-right">
                     目標 {g.target}
                   </span>
                 </div>
@@ -306,22 +310,26 @@ export default function StrategyPage() {
         </div>
 
         {/* 退職リスク */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <h2 className="font-semibold text-gray-800 mb-1">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">
             リテンションリスク
           </h2>
-          <p className="text-xs text-gray-400 mb-4">
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
             ※ 現在はパフォーマンス傾向から推定。DB導入後はエンゲージメント調査・1on1データを活用予定
           </p>
           <div className="space-y-3">
             {retentionRisks.map((emp) => (
               <div key={emp.id} className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-700 flex-shrink-0">
-                  {emp.avatar}
-                </div>
+                {emp.avatar && (emp.avatar.startsWith("data:image") || emp.avatar.startsWith("http")) ? (
+                  <img src={emp.avatar} alt={emp.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center font-bold text-indigo-700 dark:text-indigo-300 flex-shrink-0">
+                    {emp.avatar || emp.name.charAt(0) || "?"}
+                  </div>
+                )}
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">{emp.name}</span>
+                    <span className="text-sm font-medium dark:text-gray-200">{emp.name}</span>
                     <span
                       className={`text-xs font-bold ${
                         emp.riskScore > 20
@@ -338,10 +346,10 @@ export default function StrategyPage() {
                         : "低リスク"}
                     </span>
                   </div>
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-gray-400 dark:text-gray-500">
                     {emp.department} · {emp.role}
                   </div>
-                  <div className="h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
+                  <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mt-1 overflow-hidden">
                     <div
                       className={`h-full rounded-full ${
                         emp.riskScore > 20
@@ -361,8 +369,8 @@ export default function StrategyPage() {
       </div>
 
       {/* パフォーマンス vs 在籍年数 */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <h2 className="font-semibold text-gray-800 mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+        <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">
           在籍年数 × パフォーマンス
         </h2>
         <ResponsiveContainer width="100%" height={220}>
@@ -391,10 +399,10 @@ export default function StrategyPage() {
                 if (payload && payload.length) {
                   const d = payload[0].payload;
                   return (
-                    <div className="bg-white border border-gray-200 rounded-lg p-2 shadow text-xs">
-                      <div className="font-semibold">{d.name}</div>
-                      <div className="text-gray-500">{d.dept}</div>
-                      <div>在籍 {d.x}年 · {d.y}点</div>
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2 shadow text-xs">
+                      <div className="font-semibold dark:text-gray-200">{d.name}</div>
+                      <div className="text-gray-500 dark:text-gray-400">{d.dept}</div>
+                      <div className="dark:text-gray-300">在籍 {d.x}年 · {d.y}点</div>
                     </div>
                   );
                 }
@@ -407,35 +415,35 @@ export default function StrategyPage() {
       </div>
 
       {/* サクセッションプラン */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <h2 className="font-semibold text-gray-800 mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+        <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">
           サクセッションプラン（後継者候補）
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left py-2 pr-4 text-gray-500 font-semibold">
+              <tr className="border-b border-gray-100 dark:border-gray-700">
+                <th className="text-left py-2 pr-4 text-gray-500 dark:text-gray-400 font-semibold">
                   ポジション
                 </th>
-                <th className="text-left py-2 pr-4 text-gray-500 font-semibold">
+                <th className="text-left py-2 pr-4 text-gray-500 dark:text-gray-400 font-semibold">
                   現任者
                 </th>
-                <th className="text-left py-2 pr-4 text-gray-500 font-semibold">
+                <th className="text-left py-2 pr-4 text-gray-500 dark:text-gray-400 font-semibold">
                   後継者候補
                 </th>
-                <th className="text-left py-2 text-gray-500 font-semibold">
+                <th className="text-left py-2 text-gray-500 dark:text-gray-400 font-semibold">
                   準備期間目安
                 </th>
               </tr>
             </thead>
             <tbody>
               {successionRoles.map((r) => (
-                <tr key={r.role} className="border-b border-gray-50">
-                  <td className="py-3 pr-4 font-medium text-gray-800">
+                <tr key={r.role} className="border-b border-gray-50 dark:border-gray-700">
+                  <td className="py-3 pr-4 font-medium text-gray-800 dark:text-gray-200">
                     {r.role}
                   </td>
-                  <td className="py-3 pr-4 text-gray-600">{r.current}</td>
+                  <td className="py-3 pr-4 text-gray-600 dark:text-gray-400">{r.current}</td>
                   <td className="py-3 pr-4">
                     <div className="flex flex-wrap gap-1">
                       {r.candidates.map((c) => (
@@ -443,8 +451,8 @@ export default function StrategyPage() {
                           key={c}
                           className={`text-xs px-2 py-0.5 rounded-full ${
                             c.startsWith("—")
-                              ? "bg-rose-50 text-rose-600"
-                              : "bg-indigo-50 text-indigo-700"
+                              ? "bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400"
+                              : "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
                           }`}
                         >
                           {c}
@@ -456,8 +464,8 @@ export default function StrategyPage() {
                     <span
                       className={`text-xs px-2 py-1 rounded-full ${
                         r.readiness === "未定"
-                          ? "bg-rose-50 text-rose-600"
-                          : "bg-green-50 text-green-700"
+                          ? "bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400"
+                          : "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300"
                       }`}
                     >
                       {r.readiness}
@@ -487,17 +495,17 @@ function InsightCard({
   sub: string;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm text-gray-500">{title}</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">{title}</span>
         <div
           className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center`}
         >
           {icon}
         </div>
       </div>
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
-      <p className="text-xs text-gray-400 mt-1">{sub}</p>
+      <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</div>
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{sub}</p>
     </div>
   );
 }
