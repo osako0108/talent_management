@@ -51,6 +51,7 @@ CREATE TABLE employees (
   avatar TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'onLeave', 'remote')),
   salary BIGINT NOT NULL DEFAULT 0,
+  left_date DATE,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
