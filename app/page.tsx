@@ -270,9 +270,13 @@ export default function DashboardPage() {
                 <Link href={`/employees/${emp.id}`} key={emp.id}>
                   <div className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-colors cursor-pointer">
                     <div className="relative">
-                      <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center font-bold text-indigo-700 dark:text-indigo-300">
-                        {emp.avatar}
-                      </div>
+                      {emp.avatar && (emp.avatar.startsWith("data:image") || emp.avatar.startsWith("http")) ? (
+                        <img src={emp.avatar} alt={emp.name} className="w-9 h-9 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center font-bold text-indigo-700 dark:text-indigo-300">
+                          {emp.avatar || emp.name.charAt(0) || "?"}
+                        </div>
+                      )}
                       {i === 0 && (
                         <Star
                           size={12}
