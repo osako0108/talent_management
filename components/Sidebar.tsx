@@ -12,11 +12,7 @@ import {
   FolderKanban,
   ChevronRight,
   ChevronLeft,
-  BookOpen,
-  Briefcase,
-  Award,
-  ToggleLeft,
-  Database,
+  Settings,
   Sun,
   Moon,
   Monitor,
@@ -36,12 +32,8 @@ const navItems = [
 ];
 
 const masterItems = [
-  { href: "/master/departments", label: "部署マスタ", icon: undefined },
-  { href: "/master/roles", label: "役職マスタ", icon: Briefcase },
-  { href: "/master/skills", label: "スキルマスタ", icon: undefined },
-  { href: "/master/grades", label: "グレードマスタ", icon: Award },
-  { href: "/master/statuses", label: "ステータスマスタ", icon: ToggleLeft },
-  { href: "/master/employees", label: "スタッフマスタ", icon: undefined },
+  { href: "/settings", label: "全体設定", icon: Settings },
+  { href: "/master/employees", label: "スタッフマスタ", icon: Users },
 ];
 
 const utilItems = [
@@ -136,14 +128,14 @@ export default function Sidebar() {
         {!collapsed && (
           <div className="pt-4 pb-1 px-3">
             <div className="flex items-center gap-2 text-xs text-on-surface-variant font-medium uppercase tracking-wider">
-              <Database size={14} />
+              <Settings size={14} />
               マスタ管理
             </div>
           </div>
         )}
         {collapsed && <div className="pt-4" />}
         {masterItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href;
+          const active = pathname === href || (href === "/settings" && pathname.startsWith("/master/") && pathname !== "/master/employees");
           return (
             <Link
               key={href}
@@ -157,13 +149,7 @@ export default function Sidebar() {
                   : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
               }`}
             >
-              {Icon ? (
-                <Icon size={18} className="flex-shrink-0" />
-              ) : collapsed ? (
-                <Database size={16} className="flex-shrink-0" />
-              ) : (
-                <span className="w-[18px]" />
-              )}
+              <Icon size={18} className="flex-shrink-0" />
               {!collapsed && <span className="flex-1 whitespace-nowrap">{label}</span>}
               {!collapsed && active && <ChevronRight size={14} className="text-primary opacity-60" />}
             </Link>

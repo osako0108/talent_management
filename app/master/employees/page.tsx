@@ -489,9 +489,13 @@ export default function EmployeesMasterPage() {
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold">
-                        {emp.avatar}
-                      </div>
+                      {emp.avatar && (emp.avatar.startsWith("data:image") || emp.avatar.startsWith("http")) ? (
+                        <img src={emp.avatar} alt={emp.name} className="w-8 h-8 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold">
+                          {emp.avatar || emp.name.charAt(0) || "?"}
+                        </div>
+                      )}
                       <div>
                         <div className="font-medium">{emp.name}</div>
                         <div className="text-xs text-gray-400">
