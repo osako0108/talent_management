@@ -121,6 +121,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 92 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "e002",
@@ -148,6 +151,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 89 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "e003",
@@ -174,6 +180,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 87 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "e004",
@@ -200,6 +209,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 88 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "e005",
@@ -226,6 +238,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 85 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   // Sales
   {
@@ -253,6 +268,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 95 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "s002",
@@ -278,6 +296,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 88 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "s003",
@@ -303,6 +324,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 90 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   // Marketing
   {
@@ -330,6 +354,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 91 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "m002",
@@ -355,6 +382,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 85 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   // HR
   {
@@ -382,6 +412,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 92 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "h002",
@@ -407,6 +440,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 81 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   // Finance
   {
@@ -434,6 +470,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 93 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   // Product
   {
@@ -461,6 +500,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 92 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "p002",
@@ -487,6 +529,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 87 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
 ];
 
