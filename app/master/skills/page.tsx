@@ -300,12 +300,12 @@ export default function SkillsMasterPage() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-1">スキルマスタ管理</h1>
-      <p className="text-gray-500 text-sm mb-6">
+      <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
         スキルカテゴリ・スキルタグ・スキルの追加・編集・削除
       </p>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg text-sm">
           {error}
         </div>
       )}
@@ -313,7 +313,7 @@ export default function SkillsMasterPage() {
       {/* Skill Categories Section */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
+          <h2 className="text-lg font-semibold dark:text-gray-100 flex items-center gap-2">
             <Tag size={20} />
             スキルカテゴリ
           </h2>
@@ -333,16 +333,16 @@ export default function SkillsMasterPage() {
         </div>
 
         {catFormOpen && (
-          <div className="mb-4 p-4 bg-white rounded-xl border border-gray-200 shadow-sm flex items-end gap-3">
+          <div className="mb-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-end gap-3">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 カテゴリ名 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={catName}
                 onChange={(e) => setCatName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="技術"
               />
             </div>
@@ -360,7 +360,7 @@ export default function SkillsMasterPage() {
                 setCatName("");
                 setError("");
               }}
-              className="flex items-center gap-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+              className="flex items-center gap-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm"
             >
               <X size={16} />
             </button>
@@ -371,7 +371,7 @@ export default function SkillsMasterPage() {
           {categories.map((cat) => (
             <div
               key={cat.id}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm"
+              className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full text-sm"
             >
               <span>{cat.name}</span>
               <button
@@ -380,13 +380,13 @@ export default function SkillsMasterPage() {
                   setEditingCatId(cat.id);
                   setCatName(cat.name);
                 }}
-                className="p-0.5 text-gray-400 hover:text-indigo-600"
+                className="p-0.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
               >
                 <Pencil size={12} />
               </button>
               <button
                 onClick={() => deleteCategory(cat.id)}
-                className="p-0.5 text-gray-400 hover:text-red-600"
+                className="p-0.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400"
               >
                 <Trash2 size={12} />
               </button>
@@ -398,7 +398,7 @@ export default function SkillsMasterPage() {
       {/* Skill Tags Section */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
+          <h2 className="text-lg font-semibold dark:text-gray-100 flex items-center gap-2">
             <Tags size={20} />
             スキルタグ
           </h2>
@@ -419,22 +419,22 @@ export default function SkillsMasterPage() {
         </div>
 
         {tagFormOpen && (
-          <div className="mb-4 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+          <div className="mb-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
             <div className="flex items-end gap-3">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   タグ名 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={tagName}
                   onChange={(e) => setTagName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   placeholder="開発"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   カラー
                 </label>
                 <div className="flex items-center gap-2">
@@ -477,7 +477,7 @@ export default function SkillsMasterPage() {
                   setTagColor("#6366f1");
                   setError("");
                 }}
-                className="flex items-center gap-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+                className="flex items-center gap-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm"
               >
                 <X size={16} />
               </button>

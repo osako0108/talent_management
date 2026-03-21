@@ -296,26 +296,68 @@ export default function DashboardPage() {
       </div>
 
       {/* Alerts */}
-      <div className="bg-warning-bg rounded-3xl p-6">
-        <h2 className="font-semibold text-warning-text mb-4 flex items-center gap-2">
-          <AlertTriangle size={18} />
-          アクションが必要な事項
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <AlertItem
-            title="スキルギャップ検出"
-            desc="データサイエンス領域のスキル保有者が0名です。採用・育成を検討してください。"
-          />
-          <AlertItem
-            title="休職者フォロー"
-            desc="岡田 龍之介（プロダクト部）が休職中です。復帰支援プランを確認してください。"
-          />
-          <AlertItem
-            title="後継者候補の育成"
-            desc="CFO・HRマネージャーポジションの後継者候補が不明です。"
-          />
-        </div>
-      </div>
+      {(() => {
+        const alerts: { title: string; desc: string }[] = [];
+
+        // 休職者アラート
+        const onLeaveEmps = employees.filter((e) => e.status === "onLeave");
+        if (onLeaveEmps.length > 0) {
+          alerts.push({
+            title: "休職者フォロー",
+            desc: `${onLeaveEmps.map((e) => `${e.name}（${e.department}）`).join("、")}が休職中です。復帰支援プランを確認してください。`,
+          });
+        }
+
+        // スキル保有者0のカテゴリ
+        const allCategories = new Set<string>();
+        employees.forEach((e) => e.skills.forEach((s) => allCategories.add(s.category)));
+        const emptyCategories = radarCategories.filter(
+          (cat) => !employees.some((e) => e.skills.some((s) => s.category === cat))
+        );
+        if (emptyCategories.length > 0) {
+          alerts.push({
+            title: "スキルギャップ検出",
+            desc: `${emptyCategories.join("・")}領域のスキル保有者が0名です。採用・育成を検討してください。`,
+          });
+        }
+
+        // パフォーマンス低下アラート
+        const lowPerformers = employees.filter((e) => {
+          const p2024 = e.performance.find((p) => p.year === 2024)?.score ?? 0;
+          return p2024 > 0 && p2024 < 50;
+        });
+        if (lowPerformers.length > 0) {
+          alerts.push({
+            title: "パフォーマンス低下",
+            desc: `${lowPerformers.length}名のパフォーマンススコアが50未満です。1on1面談を推奨します。`,
+          });
+        }
+
+        // スキル未登録アラート
+        const noSkillEmps = employees.filter((e) => e.skills.length === 0);
+        if (noSkillEmps.length > 0) {
+          alerts.push({
+            title: "スキル未登録",
+            desc: `${noSkillEmps.length}名のスキル情報が未登録です。スキルマトリックスから登録してください。`,
+          });
+        }
+
+        if (alerts.length === 0) return null;
+
+        return (
+          <div className="bg-warning-bg rounded-3xl p-6">
+            <h2 className="font-semibold text-warning-text mb-4 flex items-center gap-2">
+              <AlertTriangle size={18} />
+              アクションが必要な事項
+            </h2>
+            <div className={`grid grid-cols-1 ${alerts.length >= 3 ? "md:grid-cols-3" : alerts.length === 2 ? "md:grid-cols-2" : ""} gap-4`}>
+              {alerts.map((alert, i) => (
+                <AlertItem key={i} title={alert.title} desc={alert.desc} />
+              ))}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
