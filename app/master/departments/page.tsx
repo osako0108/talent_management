@@ -215,7 +215,7 @@ export default function DepartmentsMasterPage() {
                   type="color"
                   value={form.color}
                   onChange={(e) => setForm({ ...form, color: e.target.value })}
-                  className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
+                  className="w-10 h-10 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
                 />
                 <span className="text-sm text-gray-500 dark:text-gray-400">{form.color}</span>
               </div>

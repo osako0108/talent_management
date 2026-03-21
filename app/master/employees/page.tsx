@@ -517,14 +517,14 @@ export default function EmployeesMasterPage() {
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => startEdit(emp)}
-                        className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                        className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded transition-colors"
                         title="編集"
                       >
                         <Pencil size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(emp.id)}
-                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
                         title="削除"
                       >
                         <Trash2 size={16} />

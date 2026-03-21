@@ -113,39 +113,47 @@ export default function DashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        <KpiCard
-          title="総従業員数"
-          value={totalEmployees}
-          unit="名"
-          icon={<Users size={22} />}
-          iconBg="bg-primary-fixed text-primary"
-          trend={`+2%`}
-        />
-        <KpiCard
-          title="部署数"
-          value={departments.length}
-          unit="部署"
-          icon={<Building2 size={22} />}
-          iconBg="bg-surface-container text-on-surface-variant"
-        />
-        <KpiCard
-          title="平均パフォーマンス"
-          value={(avgPerf2024 / 20).toFixed(1)}
-          unit="/ 5.0"
-          icon={<Star size={22} />}
-          iconBg="bg-warning-bg text-warning-text"
-          trend="良好"
-          trendColor="text-success-text"
-        />
-        <KpiCard
-          title="離職リスク"
-          value={onLeaveCount}
-          unit="名"
-          icon={<AlertTriangle size={22} />}
-          iconBg="bg-error-bg text-error"
-          trend="注意"
-          trendColor="text-error"
-        />
+        <Link href="/employees">
+          <KpiCard
+            title="総従業員数"
+            value={totalEmployees}
+            unit="名"
+            icon={<Users size={22} />}
+            iconBg="bg-primary-fixed text-primary"
+            trend={`+2%`}
+          />
+        </Link>
+        <Link href="/departments">
+          <KpiCard
+            title="部署数"
+            value={departments.length}
+            unit="部署"
+            icon={<Building2 size={22} />}
+            iconBg="bg-surface-container text-on-surface-variant"
+          />
+        </Link>
+        <Link href="/strategy">
+          <KpiCard
+            title="平均パフォーマンス"
+            value={(avgPerf2024 / 20).toFixed(1)}
+            unit="/ 5.0"
+            icon={<Star size={22} />}
+            iconBg="bg-warning-bg text-warning-text"
+            trend="良好"
+            trendColor="text-success-text"
+          />
+        </Link>
+        <Link href="/strategy">
+          <KpiCard
+            title="離職リスク"
+            value={onLeaveCount}
+            unit="名"
+            icon={<AlertTriangle size={22} />}
+            iconBg="bg-error-bg text-error"
+            trend={onLeaveCount > 0 ? "注意" : "良好"}
+            trendColor={onLeaveCount > 0 ? "text-error" : "text-success-text"}
+          />
+        </Link>
       </div>
 
       {/* Charts Row 1 */}
@@ -380,7 +388,7 @@ function KpiCard({
   trendColor?: string;
 }) {
   return (
-    <div className="bg-surface-lowest rounded-3xl shadow-ambient p-6">
+    <div className="bg-surface-lowest rounded-3xl shadow-ambient p-6 hover:shadow-lg transition-shadow cursor-pointer">
       <div className="flex items-center justify-between mb-4">
         <div className={`w-11 h-11 ${iconBg} rounded-2xl flex items-center justify-center`}>
           {icon}

@@ -161,9 +161,12 @@ export default function EmployeeDetailPage({
             </div>
             <p className="text-gray-600 dark:text-gray-400 mt-1">{emp.role}</p>
             <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500 dark:text-gray-400">
-              <span className="flex items-center gap-1.5">
+              <Link
+                href="/departments"
+                className="flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              >
                 <Building2 size={14} /> {emp.department}
-              </span>
+              </Link>
               <span className="flex items-center gap-1.5">
                 <Briefcase size={14} /> {gradeLabels[emp.grade] ?? emp.grade}
               </span>

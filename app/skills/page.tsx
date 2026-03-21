@@ -93,7 +93,7 @@ export default function SkillsPage() {
           setSkillTagMap(map);
         }
       } catch (err) {
-        console.error("Tag fetch failed:", err);
+        // タグ取得失敗は無視（Supabase未接続時）
       }
     };
     fetchTags();

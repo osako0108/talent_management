@@ -262,7 +262,6 @@ export default function ProjectsPage() {
         })
       );
     } catch (err) {
-      console.error("Project fetch error:", err);
       setError("データの取得に失敗しました");
     }
     setLoading(false);

@@ -299,7 +299,7 @@ export default function SkillsMasterPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-1">スキルマスタ管理</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">スキルマスタ管理</h1>
       <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
         スキルカテゴリ・スキルタグ・スキルの追加・編集・削除
       </p>
@@ -446,7 +446,7 @@ export default function SkillsMasterPage() {
                         className={`w-7 h-7 rounded-full border-2 transition-all ${
                           tagColor === c
                             ? "border-gray-800 scale-110"
-                            : "border-transparent hover:border-gray-300"
+                            : "border-transparent hover:border-gray-300 dark:hover:border-gray-600"
                         }`}
                         style={{ backgroundColor: c }}
                         title={c}
@@ -518,12 +518,12 @@ export default function SkillsMasterPage() {
       {/* Skills Section */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">スキル一覧</h2>
+          <h2 className="text-lg font-semibold dark:text-gray-100">スキル一覧</h2>
           <div className="flex items-center gap-3">
             <select
               value={filterCategoryId}
               onChange={(e) => setFilterCategoryId(e.target.value)}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">全カテゴリ</option>
               {categories.map((c) => (
@@ -535,7 +535,7 @@ export default function SkillsMasterPage() {
             <select
               value={filterTagId}
               onChange={(e) => setFilterTagId(e.target.value)}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">全タグ</option>
               {tags.map((t) => (
@@ -563,28 +563,28 @@ export default function SkillsMasterPage() {
         </div>
 
         {skillFormOpen && (
-          <div className="mb-4 p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+          <div className="mb-4 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
             <div className="flex items-end gap-3 mb-3">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   スキル名 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={skillName}
                   onChange={(e) => setSkillName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   placeholder="TypeScript"
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   カテゴリ <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={skillCategoryId}
                   onChange={(e) => setSkillCategoryId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="">選択してください</option>
                   {categories.map((c) => (
@@ -608,14 +608,14 @@ export default function SkillsMasterPage() {
                   setSelectedTagIds([]);
                   setError("");
                 }}
-                className="flex items-center gap-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+                className="flex items-center gap-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm"
               >
                 <X size={16} />
               </button>
             </div>
             {tags.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <Filter size={14} className="inline mr-1" />
                   タグ
                 </label>
@@ -626,7 +626,7 @@ export default function SkillsMasterPage() {
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm cursor-pointer transition-all border-2 ${
                         selectedTagIds.includes(tag.id)
                           ? "text-white border-transparent"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                          : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                       }`}
                       style={
                         selectedTagIds.includes(tag.id)
@@ -660,26 +660,26 @@ export default function SkillsMasterPage() {
         )}
 
         {loading ? (
-          <div className="text-center py-12 text-gray-500">読み込み中...</div>
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">読み込み中...</div>
         ) : filteredSkills.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             スキルが登録されていません
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                 <tr>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400">
                     スキル名
                   </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400">
                     カテゴリ
                   </th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600">
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400">
                     タグ
                   </th>
-                  <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">
+                  <th className="text-right px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400">
                     操作
                   </th>
                 </tr>
@@ -688,11 +688,11 @@ export default function SkillsMasterPage() {
                 {filteredSkills.map((skill) => (
                   <tr
                     key={skill.id}
-                    className="border-b border-gray-100 hover:bg-gray-50"
+                    className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                   >
                     <td className="px-4 py-3 font-medium">{skill.name}</td>
                     <td className="px-4 py-3 text-sm">
-                      <span className="px-2 py-1 bg-gray-100 rounded-full text-gray-600">
+                      <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-400">
                         {skill.skill_categories?.name || ""}
                       </span>
                     </td>
@@ -713,14 +713,14 @@ export default function SkillsMasterPage() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleEditSkill(skill)}
-                          className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                          className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded transition-colors"
                           title="編集"
                         >
                           <Pencil size={16} />
                         </button>
                         <button
                           onClick={() => deleteSkill(skill.id)}
-                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
                           title="削除"
                         >
                           <Trash2 size={16} />
