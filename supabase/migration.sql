@@ -172,3 +172,34 @@ INSERT INTO skill_tags (name, color) VALUES
   ('必須', '#ef4444'),
   ('新規', '#10b981')
 ON CONFLICT (name) DO NOTHING;
+
+-- ========================================
+-- 役職マスタ
+-- ========================================
+CREATE TABLE IF NOT EXISTS roles (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  description TEXT DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE roles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all on roles" ON roles FOR ALL USING (true) WITH CHECK (true);
+
+INSERT INTO roles (name, description) VALUES
+  ('エンジニアリングマネージャー', '技術チームの管理・育成'),
+  ('シニアエンジニア', '上級エンジニア'),
+  ('フロントエンドエンジニア', 'フロントエンド開発担当'),
+  ('インフラエンジニア', 'インフラ構築・運用'),
+  ('データエンジニア', 'データ基盤開発'),
+  ('セールスマネージャー', '営業チーム管理'),
+  ('アカウントエグゼクティブ', '法人営業担当'),
+  ('カスタマーサクセスマネージャー', '顧客成功支援'),
+  ('マーケティングマネージャー', 'マーケティング戦略'),
+  ('コンテンツマーケター', 'コンテンツ制作・運用'),
+  ('HRマネージャー', '人事管理'),
+  ('採用担当', '採用業務'),
+  ('CFO', '最高財務責任者'),
+  ('プロダクトマネージャー', 'プロダクト管理'),
+  ('UXデザイナー', 'UXデザイン')
+ON CONFLICT (name) DO NOTHING;
