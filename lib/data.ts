@@ -19,8 +19,11 @@ export type Employee = {
   skills: Skill[];
   performance: { year: number; score: number }[];
   projects: string[];
-  status: "active" | "onLeave" | "remote";
+  status: "active" | "training" | "onLeave" | "remote";
   leftDate: string;
+  trainingCompletedAt: string;
+  gender: "male" | "female" | "";
+  avatarIcon: string;
 };
 
 export type Department = {

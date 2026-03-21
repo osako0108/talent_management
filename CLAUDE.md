@@ -19,6 +19,7 @@ app/
 │   └── [id]/page.tsx          # 従業員詳細（スキル・パフォーマンス推移）
 ├── departments/page.tsx       # 部署管理（パフォーマンス比較・連携マップ）
 ├── skills/page.tsx            # スキルマトリクス（スキル×メンバー表）
+├── projects/page.tsx          # プロジェクト管理（部署/スタッフアサイン・マイルストーン）
 ├── strategy/page.tsx          # 戦略インサイト（ギャップ分析・離職リスク）
 ├── manual/page.tsx            # 操作マニュアル
 ├── layout.tsx                 # ルートレイアウト（サイドバー付き）

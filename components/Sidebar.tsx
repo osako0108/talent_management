@@ -9,6 +9,7 @@ import {
   Building2,
   BarChart3,
   Target,
+  FolderKanban,
   ChevronRight,
   ChevronLeft,
   BookOpen,
@@ -30,6 +31,7 @@ const navItems = [
   { href: "/employees", label: "従業員管理", icon: Users },
   { href: "/departments", label: "部署管理", icon: Building2 },
   { href: "/skills", label: "スキルマトリックス", icon: BarChart3 },
+  { href: "/projects", label: "プロジェクト管理", icon: FolderKanban },
   { href: "/strategy", label: "戦略インサイト", icon: Target },
 ];
 
