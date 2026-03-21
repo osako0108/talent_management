@@ -208,10 +208,14 @@ export default function SkillsMasterPage() {
 
     // Update tags: delete all existing, then insert selected
     if (skillId) {
-      await supabase
+      const { error: delTagError } = await supabase
         .from("skill_master_tags")
         .delete()
         .eq("skill_master_id", skillId);
+      if (delTagError) {
+        setError(delTagError.message);
+        return;
+      }
 
       if (selectedTagIds.length > 0) {
         const tagInserts = selectedTagIds.map((tagId) => ({
@@ -223,6 +227,7 @@ export default function SkillsMasterPage() {
           .insert(tagInserts);
         if (tagError) {
           setError(tagError.message);
+          return;
         }
       }
     }

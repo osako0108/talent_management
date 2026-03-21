@@ -68,7 +68,8 @@ export default function SkillsPage() {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const { supabase } = await import("@/lib/supabase");
+        const { supabase, isSupabaseConfigured } = await import("@/lib/supabase");
+        if (!isSupabaseConfigured) return;
         const [tagRes, mappingRes] = await Promise.all([
           supabase.from("skill_tags").select("*").order("name"),
           supabase
@@ -91,8 +92,8 @@ export default function SkillsPage() {
           });
           setSkillTagMap(map);
         }
-      } catch {
-        // Supabase not configured, use fallback tags
+      } catch (err) {
+        console.error("Tag fetch failed:", err);
       }
     };
     fetchTags();

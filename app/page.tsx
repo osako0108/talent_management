@@ -6,7 +6,7 @@ import {
   Users,
   Building2,
   TrendingUp,
-  AlertCircle,
+  AlertTriangle,
   ArrowUpRight,
   Star,
 } from "lucide-react";
@@ -33,9 +33,7 @@ export default function DashboardPage() {
   const { employees, departments, loading } = useAppData();
 
   if (loading) {
-    return (
-      <PageLoading />
-    );
+    return <PageLoading />;
   }
 
   const totalEmployees = employees.length;
@@ -43,15 +41,13 @@ export default function DashboardPage() {
   const remoteCount = employees.filter((e) => e.status === "remote").length;
   const onLeaveCount = employees.filter((e) => e.status === "onLeave").length;
 
-  // 部署別人員
   const deptData = departments.map((d) => ({
-    name: d.name.length > 5 ? d.name.slice(0, 5) + "…" : d.name,
+    name: d.name.length > 5 ? d.name.slice(0, 5) + "\u2026" : d.name,
     fullName: d.name,
-    人数: employees.filter((e) => e.department === d.name).length,
+    count: employees.filter((e) => e.department === d.name).length,
     fill: d.color,
   }));
 
-  // スキルカテゴリ分布
   const skillCountMap: Record<string, number> = {};
   employees.forEach((emp) => {
     emp.skills.forEach((skill) => {
@@ -63,28 +59,22 @@ export default function DashboardPage() {
     .slice(0, 8)
     .map(([category, count]) => ({ category, count }));
 
-  // グレード分布
   const gradeMap: Record<string, number> = {};
   employees.forEach((e) => {
     const prefix = e.grade[0];
     const label =
-      prefix === "J" ? "ジュニア" : prefix === "S" ? "シニア" : "マネージャー";
+      prefix === "J" ? "\u30b8\u30e5\u30cb\u30a2" : prefix === "S" ? "\u30b7\u30cb\u30a2" : "\u30de\u30cd\u30fc\u30b8\u30e3\u30fc";
     gradeMap[label] = (gradeMap[label] || 0) + 1;
   });
-  const gradeData = Object.entries(gradeMap).map(([name, value]) => ({
-    name,
-    value,
-  }));
-  const GRADE_COLORS = ["#a5b4fc", "#6366f1", "#4338ca"];
+  const gradeData = Object.entries(gradeMap).map(([name, value]) => ({ name, value }));
+  const GRADE_COLORS = ["#c4c0ff", "#6366f1", "#3525cd"];
 
-  // 平均パフォーマンス(2024)
   const avgPerf2024 =
     employees.reduce((sum, e) => {
       const p = e.performance.find((p) => p.year === 2024);
       return sum + (p ? p.score : 0);
     }, 0) / employees.length;
 
-  // トップパフォーマー
   const topPerformers = [...employees]
     .sort((a, b) => {
       const sa = a.performance.find((p) => p.year === 2024)?.score ?? 0;
@@ -93,15 +83,7 @@ export default function DashboardPage() {
     })
     .slice(0, 5);
 
-  // 組織スキルレーダー
-  const radarCategories = [
-    "技術",
-    "マネジメント",
-    "営業",
-    "コミュニケーション",
-    "マーケティング",
-    "HR",
-  ];
+  const radarCategories = ["\u6280\u8853", "\u30de\u30cd\u30b8\u30e1\u30f3\u30c8", "\u55b6\u696d", "\u30b3\u30df\u30e5\u30cb\u30b1\u30fc\u30b7\u30e7\u30f3", "\u30de\u30fc\u30b1\u30c6\u30a3\u30f3\u30b0", "HR"];
   const radarData = radarCategories.map((cat) => {
     const catSkills = employees.flatMap((e) =>
       e.skills.filter((s) => s.category === cat)
@@ -114,65 +96,75 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">ダッシュボード</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">組織全体の人材状況を一目で把握</p>
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-on-surface tracking-tight">\u30c0\u30c3\u30b7\u30e5\u30dc\u30fc\u30c9</h1>
+          <p className="text-on-surface-variant mt-1">\u8ab0\u3067\u3082\u308f\u304b\u308b\u7d44\u7e54\u306e\u73fe\u5728\u5730</p>
+        </div>
+        <Link
+          href="/employees"
+          className="gradient-primary text-on-primary px-5 py-3 rounded-2xl text-sm font-semibold flex items-center gap-2 min-h-[48px] hover:opacity-90 transition-opacity"
+        >
+          + \u5f93\u696d\u54e1\u3092\u8ffd\u52a0
+        </Link>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         <KpiCard
-          title="総従業員数"
+          title="\u7dcf\u5f93\u696d\u54e1\u6570"
           value={totalEmployees}
-          unit="名"
-          icon={<Users size={20} className="text-indigo-600" />}
-          bg="bg-indigo-50 dark:bg-indigo-900/30"
-          sub={`在籍 ${activeCount}名 / リモート ${remoteCount}名`}
+          unit="\u540d"
+          icon={<Users size={22} />}
+          iconBg="bg-primary-fixed text-primary"
+          trend={`+2%`}
         />
         <KpiCard
-          title="部署数"
+          title="\u90e8\u7f72\u6570"
           value={departments.length}
-          unit="部署"
-          icon={<Building2 size={20} className="text-emerald-600" />}
-          bg="bg-emerald-50 dark:bg-emerald-900/30"
-          sub="全社横断組織を含む"
+          unit="\u90e8\u7f72"
+          icon={<Building2 size={22} />}
+          iconBg="bg-surface-container text-on-surface-variant"
         />
         <KpiCard
-          title="平均パフォーマンス"
-          value={avgPerf2024.toFixed(1)}
-          unit="点"
-          icon={<TrendingUp size={20} className="text-amber-600" />}
-          bg="bg-amber-50 dark:bg-amber-900/30"
-          sub="2024年度評価（100点満点）"
+          title="\u5e73\u5747\u30d1\u30d5\u30a9\u30fc\u30de\u30f3\u30b9"
+          value={(avgPerf2024 / 20).toFixed(1)}
+          unit="/ 5.0"
+          icon={<Star size={22} />}
+          iconBg="bg-warning-bg text-warning-text"
+          trend="\u826f\u597d"
+          trendColor="text-success-text"
         />
         <KpiCard
-          title="要注目"
+          title="\u96e2\u8077\u30ea\u30b9\u30af"
           value={onLeaveCount}
-          unit="名"
-          icon={<AlertCircle size={20} className="text-rose-600" />}
-          bg="bg-rose-50 dark:bg-rose-900/30"
-          sub="休職中・ケア対象者"
+          unit="\u540d"
+          icon={<AlertTriangle size={22} />}
+          iconBg="bg-error-bg text-error"
+          trend="\u6ce8\u610f"
+          trendColor="text-error"
         />
       </div>
 
       {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 lg:col-span-2">
-          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">部署別人員構成</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="bg-surface-lowest rounded-3xl shadow-ambient p-6 lg:col-span-2">
+          <h2 className="font-semibold text-on-surface mb-5">\u90e8\u7f72\u5225\u306e\u4eba\u54e1\u69cb\u6210</h2>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={deptData} barSize={36}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-container)" />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: "var(--on-surface-variant)" }} />
+              <YAxis tick={{ fontSize: 12, fill: "var(--on-surface-variant)" }} />
               <Tooltip
-                formatter={(val) => [`${val}名`, "人数"]}
+                formatter={(val) => [`${val}\u540d`, "\u4eba\u6570"]}
                 labelFormatter={(label) =>
                   deptData.find((d) => d.name === label)?.fullName ?? label
                 }
+                contentStyle={{ borderRadius: "16px", border: "none", boxShadow: "0 4px 24px rgba(53,37,205,0.08)" }}
               />
-              <Bar dataKey="人数" radius={[6, 6, 0, 0]}>
+              <Bar dataKey="count" radius={[8, 8, 0, 0]}>
                 {deptData.map((entry, i) => (
                   <Cell key={i} fill={entry.fill} />
                 ))}
@@ -181,8 +173,8 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
-          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">グレード分布</h2>
+        <div className="bg-surface-lowest rounded-3xl shadow-ambient p-6">
+          <h2 className="font-semibold text-on-surface mb-5">\u30b0\u30ec\u30fc\u30c9\u5206\u5e03</h2>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
@@ -200,49 +192,49 @@ export default function DashboardPage() {
               </Pie>
               <Legend
                 formatter={(value) => (
-                  <span className="text-xs text-gray-600 dark:text-gray-400">{value}</span>
+                  <span className="text-xs text-on-surface-variant">{value}</span>
                 )}
               />
-              <Tooltip formatter={(val) => [`${val}名`]} />
+              <Tooltip formatter={(val) => [`${val}\u540d`]} contentStyle={{ borderRadius: "16px", border: "none" }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
-          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">組織スキルバランス</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="bg-surface-lowest rounded-3xl shadow-ambient p-6">
+          <h2 className="font-semibold text-on-surface mb-5">\u7d44\u7e54\u30b9\u30ad\u30eb\u30d0\u30e9\u30f3\u30b9</h2>
           <ResponsiveContainer width="100%" height={230}>
             <RadarChart data={radarData}>
-              <PolarGrid />
-              <PolarAngleAxis dataKey="category" tick={{ fontSize: 11 }} />
+              <PolarGrid stroke="var(--surface-container-high)" />
+              <PolarAngleAxis dataKey="category" tick={{ fontSize: 11, fill: "var(--on-surface-variant)" }} />
               <Radar
-                name="平均レベル"
+                name="\u5e73\u5747\u30ec\u30d9\u30eb"
                 dataKey="value"
-                stroke="#6366f1"
-                fill="#6366f1"
-                fillOpacity={0.25}
+                stroke="var(--primary-container)"
+                fill="var(--primary-container)"
+                fillOpacity={0.2}
               />
-              <Tooltip formatter={(v) => [`${v}点`]} />
+              <Tooltip formatter={(v) => [`${v}\u70b9`]} contentStyle={{ borderRadius: "16px", border: "none" }} />
             </RadarChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
-          <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">スキルカテゴリ分布</h2>
-          <div className="space-y-2 mt-2">
+        <div className="bg-surface-lowest rounded-3xl shadow-ambient p-6">
+          <h2 className="font-semibold text-on-surface mb-5">\u30b9\u30ad\u30eb\u30ab\u30c6\u30b4\u30ea\u5206\u5e03</h2>
+          <div className="space-y-3 mt-2">
             {skillData.map((item) => {
               const maxVal = skillData[0].count;
               return (
                 <div key={item.category}>
-                  <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-0.5">
+                  <div className="flex justify-between text-xs text-on-surface-variant mb-1">
                     <span>{item.category}</span>
-                    <span>{item.count}件</span>
+                    <span className="font-medium">{item.count}\u4ef6</span>
                   </div>
-                  <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-surface-container rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-indigo-500 rounded-full"
+                      className="h-full bg-primary-container rounded-full transition-all"
                       style={{ width: `${(item.count / maxVal) * 100}%` }}
                     />
                   </div>
@@ -252,28 +244,28 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-800 dark:text-gray-200">トップパフォーマー</h2>
+        <div className="bg-surface-lowest rounded-3xl shadow-ambient p-6">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-semibold text-on-surface">\u4eca\u6708\u306eMVP</h2>
             <Link
               href="/employees"
-              className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
+              className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
             >
-              全員 <ArrowUpRight size={12} />
+              \u5168\u54e1\u3092\u898b\u308b <ArrowUpRight size={12} />
             </Link>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {topPerformers.map((emp, i) => {
               const score =
                 emp.performance.find((p) => p.year === 2024)?.score ?? 0;
               return (
                 <Link href={`/employees/${emp.id}`} key={emp.id}>
-                  <div className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-1.5 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3 hover:bg-surface-low rounded-2xl p-2.5 transition-colors cursor-pointer">
                     <div className="relative">
                       {emp.avatar && (emp.avatar.startsWith("data:image") || emp.avatar.startsWith("http")) ? (
-                        <img src={emp.avatar} alt={emp.name} className="w-9 h-9 rounded-full object-cover" />
+                        <img src={emp.avatar} alt={emp.name} className="w-10 h-10 rounded-xl object-cover" />
                       ) : (
-                        <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center font-bold text-indigo-700 dark:text-indigo-300">
+                        <div className="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center font-bold text-primary">
                           {emp.avatar || emp.name.charAt(0) || "?"}
                         </div>
                       )}
@@ -285,18 +277,15 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">
+                      <div className="text-sm font-semibold text-on-surface truncate">
                         {emp.name}
                       </div>
-                      <div className="text-xs text-gray-400 dark:text-gray-500 truncate">
-                        {emp.role}
+                      <div className="text-xs text-on-surface-variant truncate">
+                        {emp.department} / {emp.role}
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-bold text-indigo-600">
-                        {score}
-                      </div>
-                      <div className="text-xs text-gray-400 dark:text-gray-500">点</div>
+                    <div className="px-2.5 py-1 rounded-xl bg-success-bg text-success-text text-xs font-semibold">
+                      {(score / 20).toFixed(1)}
                     </div>
                   </div>
                 </Link>
@@ -307,25 +296,23 @@ export default function DashboardPage() {
       </div>
 
       {/* Alerts */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
-        <h2 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">
-          アクションが必要な事項
+      <div className="bg-warning-bg rounded-3xl p-6">
+        <h2 className="font-semibold text-warning-text mb-4 flex items-center gap-2">
+          <AlertTriangle size={18} />
+          \u30a2\u30af\u30b7\u30e7\u30f3\u304c\u5fc5\u8981\u306a\u4e8b\u9805
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <AlertItem
-            color="yellow"
-            title="スキルギャップ検出"
-            desc="データサイエンス領域のスキル保有者が0名です。採用・育成を検討してください。"
+            title="\u30b9\u30ad\u30eb\u30ae\u30e3\u30c3\u30d7\u691c\u51fa"
+            desc="\u30c7\u30fc\u30bf\u30b5\u30a4\u30a8\u30f3\u30b9\u9818\u57df\u306e\u30b9\u30ad\u30eb\u4fdd\u6709\u8005\u304c0\u540d\u3067\u3059\u3002\u63a1\u7528\u30fb\u80b2\u6210\u3092\u691c\u8a0e\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
           />
           <AlertItem
-            color="rose"
-            title="休職者フォロー"
-            desc="岡田 龍之介（プロダクト部）が休職中です。復帰支援プランを確認してください。"
+            title="\u4f11\u8077\u8005\u30d5\u30a9\u30ed\u30fc"
+            desc="\u5ca1\u7530 \u9f8d\u4e4b\u4ecb\uff08\u30d7\u30ed\u30c0\u30af\u30c8\u90e8\uff09\u304c\u4f11\u8077\u4e2d\u3067\u3059\u3002\u5fa9\u5e30\u652f\u63f4\u30d7\u30e9\u30f3\u3092\u78ba\u8a8d\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
           />
           <AlertItem
-            color="indigo"
-            title="後継者候補の育成"
-            desc="CFO・HRマネージャーポジションの後継者候補が不明です。サクセッションプランが必要です。"
+            title="\u5f8c\u7d99\u8005\u5019\u88dc\u306e\u80b2\u6210"
+            desc="CFO\u30fbHR\u30de\u30cd\u30fc\u30b8\u30e3\u30fc\u30dd\u30b8\u30b7\u30e7\u30f3\u306e\u5f8c\u7d99\u8005\u5019\u88dc\u304c\u4e0d\u660e\u3067\u3059\u3002"
           />
         </div>
       </div>
@@ -338,61 +325,44 @@ function KpiCard({
   value,
   unit,
   icon,
-  bg,
-  sub,
+  iconBg,
+  trend,
+  trendColor,
 }: {
   title: string;
   value: string | number;
   unit: string;
   icon: React.ReactNode;
-  bg: string;
-  sub: string;
+  iconBg: string;
+  trend?: string;
+  trendColor?: string;
 }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-sm text-gray-500 dark:text-gray-400">{title}</span>
-        <div
-          className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center`}
-        >
+    <div className="bg-surface-lowest rounded-3xl shadow-ambient p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className={`w-11 h-11 ${iconBg} rounded-2xl flex items-center justify-center`}>
           {icon}
         </div>
+        {trend && (
+          <span className={`text-xs font-semibold px-2.5 py-1 rounded-xl ${trendColor || "text-success-text"} bg-surface-low`}>
+            {trend}
+          </span>
+        )}
       </div>
-      <div className="flex items-end gap-1">
-        <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">{value}</span>
-        <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">{unit}</span>
+      <p className="text-xs text-on-surface-variant font-medium mb-1">{title}</p>
+      <div className="flex items-end gap-1.5">
+        <span className="text-3xl font-bold text-on-surface tracking-tight">{value}</span>
+        <span className="text-sm text-on-surface-variant mb-0.5">{unit}</span>
       </div>
-      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{sub}</p>
     </div>
   );
 }
 
-function AlertItem({
-  color,
-  title,
-  desc,
-}: {
-  color: "yellow" | "rose" | "indigo";
-  title: string;
-  desc: string;
-}) {
-  const borderBg = {
-    yellow: "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/30 dark:border-yellow-700",
-    rose: "border-rose-300 bg-rose-50 dark:bg-rose-900/30 dark:border-rose-700",
-    indigo: "border-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 dark:border-indigo-700",
-  };
-  const dot = {
-    yellow: "bg-yellow-400",
-    rose: "bg-rose-400",
-    indigo: "bg-indigo-400",
-  };
+function AlertItem({ title, desc }: { title: string; desc: string }) {
   return (
-    <div className={`rounded-lg border-l-4 p-4 ${borderBg[color]}`}>
-      <div className="flex items-center gap-2 mb-1">
-        <div className={`w-2 h-2 rounded-full ${dot[color]}`} />
-        <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{title}</span>
-      </div>
-      <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">{desc}</p>
+    <div className="bg-surface-lowest rounded-2xl p-4">
+      <span className="text-sm font-semibold text-on-surface">{title}</span>
+      <p className="text-xs text-on-surface-variant leading-relaxed mt-1">{desc}</p>
     </div>
   );
 }

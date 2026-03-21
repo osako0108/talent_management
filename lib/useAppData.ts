@@ -3,9 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import {
-  employees as mockEmployees,
-  departments as mockDepartments,
-  skillCategories as mockSkillCategories,
   type Employee,
   type Department,
 } from "@/lib/data";
@@ -20,9 +17,9 @@ type UseAppDataResult = {
 };
 
 export function useAppData(): UseAppDataResult {
-  const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
-  const [departments, setDepartments] = useState<Department[]>(mockDepartments);
-  const [skillCategories, setSkillCategories] = useState<string[]>(mockSkillCategories);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [skillCategories, setSkillCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -133,14 +130,10 @@ export function useAppData(): UseAppDataResult {
 
       setDepartments(deptList);
       setEmployees(empList);
-      setSkillCategories(cats.length > 0 ? cats : mockSkillCategories);
+      setSkillCategories(cats);
     } catch (err) {
       console.error("Data fetch error:", err);
       setError("データの取得に失敗しました。しばらくしてから再度お試しください。");
-      // エラー時はモックデータを使用
-      setEmployees(mockEmployees);
-      setDepartments(mockDepartments);
-      setSkillCategories(mockSkillCategories);
     }
 
     setLoading(false);

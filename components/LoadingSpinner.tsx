@@ -3,11 +3,11 @@ export function LoadingSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3">
       <div className={`${dims} relative`}>
-        <div className="absolute inset-0 rounded-full border-2 border-gray-200 dark:border-gray-700" />
-        <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-indigo-500 dark:border-t-indigo-400 animate-spin" />
+        <div className="absolute inset-0 rounded-full border-2 border-surface-container" />
+        <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary-container animate-spin" />
       </div>
       {size !== "sm" && (
-        <p className="text-sm text-gray-400 dark:text-gray-500 animate-pulse">
+        <p className="text-sm text-on-surface-variant animate-pulse">
           読み込み中
         </p>
       )}
@@ -17,7 +17,7 @@ export function LoadingSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
 
 export function PageLoading() {
   return (
-    <div className="p-6 flex items-center justify-center h-64">
+    <div className="p-8 flex items-center justify-center h-64">
       <LoadingSpinner size="lg" />
     </div>
   );
