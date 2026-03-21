@@ -134,7 +134,7 @@ export default function StatusesMasterPage() {
 
   const SortHeader = ({ label, field }: { label: string; field: SortKey }) => (
     <th
-      className="text-left px-4 py-3 text-sm font-medium text-gray-600 cursor-pointer select-none hover:text-gray-900"
+      className="text-left px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 cursor-pointer select-none hover:text-gray-900 dark:hover:text-gray-100"
       onClick={() => handleSort(field)}
     >
       <div className="flex items-center gap-1">
@@ -148,8 +148,8 @@ export default function StatusesMasterPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">ステータスマスタ管理</h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">ステータスマスタ管理</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
             ステータスの追加・編集・削除
           </p>
         </div>
@@ -168,43 +168,43 @@ export default function StatusesMasterPage() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg text-sm">
           {error}
         </div>
       )}
 
       {(isAdding || editingId) && (
-        <div className="mb-6 p-6 bg-white rounded-xl border border-gray-200 shadow-sm">
-          <h2 className="font-semibold mb-4">
+        <div className="mb-6 p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+          <h2 className="font-semibold mb-4 text-gray-900 dark:text-gray-100">
             {editingId ? "ステータスを編集" : "新規ステータスを追加"}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 コード <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={form.code}
                 onChange={(e) => setForm({ ...form, code: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="active"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 名称 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="在籍"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 カラー
               </label>
               <div className="flex items-center gap-2">
@@ -214,7 +214,7 @@ export default function StatusesMasterPage() {
                   onChange={(e) => setForm({ ...form, color: e.target.value })}
                   className="w-10 h-10 rounded border border-gray-300 cursor-pointer"
                 />
-                <span className="text-sm text-gray-500">{form.color}</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">{form.color}</span>
               </div>
             </div>
           </div>
