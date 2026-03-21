@@ -951,7 +951,7 @@ export default function ProjectsPage() {
                             )}
                             <button
                               onClick={() => deleteMilestone(ms.id)}
-                              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-opacity"
+                              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-opacity"
                             >
                               <Trash2 size={14} />
                             </button>
