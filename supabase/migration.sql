@@ -249,3 +249,72 @@ INSERT INTO statuses (code, name, color) VALUES
   ('onLeave', '休職中', '#eab308'),
   ('remote', 'リモート', '#3b82f6')
 ON CONFLICT (code) DO NOTHING;
+
+-- ========================================
+-- プロジェクト管理
+-- ========================================
+CREATE TABLE IF NOT EXISTS projects (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'planning' CHECK (status IN ('planning', 'active', 'completed', 'on_hold')),
+  start_date DATE,
+  end_date DATE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- プロジェクト×部署アサイン
+CREATE TABLE IF NOT EXISTS project_departments (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  department_id UUID NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
+  UNIQUE(project_id, department_id)
+);
+
+-- プロジェクト×スタッフアサイン
+CREATE TABLE IF NOT EXISTS project_members (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  employee_id UUID NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+  role TEXT DEFAULT '',
+  UNIQUE(project_id, employee_id)
+);
+
+-- プロジェクト必要スキル
+CREATE TABLE IF NOT EXISTS project_required_skills (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  skill_master_id UUID NOT NULL REFERENCES skill_masters(id) ON DELETE CASCADE,
+  required_level INTEGER NOT NULL DEFAULT 1 CHECK (required_level BETWEEN 1 AND 5),
+  UNIQUE(project_id, skill_master_id)
+);
+
+-- マイルストーン
+CREATE TABLE IF NOT EXISTS project_milestones (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT DEFAULT '',
+  due_date DATE,
+  completed BOOLEAN DEFAULT FALSE,
+  completed_at TIMESTAMPTZ,
+  sort_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TRIGGER projects_updated_at
+  BEFORE UPDATE ON projects
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_departments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_required_skills ENABLE ROW LEVEL SECURITY;
+ALTER TABLE project_milestones ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow all on projects" ON projects FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on project_departments" ON project_departments FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on project_members" ON project_members FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on project_required_skills" ON project_required_skills FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on project_milestones" ON project_milestones FOR ALL USING (true) WITH CHECK (true);
