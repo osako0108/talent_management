@@ -174,6 +174,83 @@ INSERT INTO skill_tags (name, color) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 -- ========================================
+-- 役職マスタ
+-- ========================================
+CREATE TABLE IF NOT EXISTS roles (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  description TEXT DEFAULT '',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE roles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all on roles" ON roles FOR ALL USING (true) WITH CHECK (true);
+
+INSERT INTO roles (name, description) VALUES
+  ('エンジニアリングマネージャー', '技術チームの管理・育成'),
+  ('シニアエンジニア', '上級エンジニア'),
+  ('フロントエンドエンジニア', 'フロントエンド開発担当'),
+  ('インフラエンジニア', 'インフラ構築・運用'),
+  ('データエンジニア', 'データ基盤開発'),
+  ('セールスマネージャー', '営業チーム管理'),
+  ('アカウントエグゼクティブ', '法人営業担当'),
+  ('カスタマーサクセスマネージャー', '顧客成功支援'),
+  ('マーケティングマネージャー', 'マーケティング戦略'),
+  ('コンテンツマーケター', 'コンテンツ制作・運用'),
+  ('HRマネージャー', '人事管理'),
+  ('採用担当', '採用業務'),
+  ('CFO', '最高財務責任者'),
+  ('プロダクトマネージャー', 'プロダクト管理'),
+  ('UXデザイナー', 'UXデザイン')
+ON CONFLICT (name) DO NOTHING;
+
+-- ========================================
+-- グレードマスタ
+-- ========================================
+CREATE TABLE IF NOT EXISTS grades (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  code TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  rank_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE grades ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all on grades" ON grades FOR ALL USING (true) WITH CHECK (true);
+
+INSERT INTO grades (code, name, rank_order) VALUES
+  ('J1', 'ジュニア1', 1),
+  ('J2', 'ジュニア2', 2),
+  ('J3', 'ジュニア3', 3),
+  ('S1', 'シニア1', 4),
+  ('S2', 'シニア2', 5),
+  ('M1', 'マネージャー1', 6),
+  ('M2', 'マネージャー2', 7),
+  ('M3', 'マネージャー3', 8),
+  ('M4', 'マネージャー4（役員）', 9)
+ON CONFLICT (code) DO NOTHING;
+
+-- ========================================
+-- ステータスマスタ
+-- ========================================
+CREATE TABLE IF NOT EXISTS statuses (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  code TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  color TEXT DEFAULT '#6b7280',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE statuses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all on statuses" ON statuses FOR ALL USING (true) WITH CHECK (true);
+
+INSERT INTO statuses (code, name, color) VALUES
+  ('active', '在籍', '#22c55e'),
+  ('onLeave', '休職中', '#eab308'),
+  ('remote', 'リモート', '#3b82f6')
+ON CONFLICT (code) DO NOTHING;
+
+-- ========================================
 -- プロジェクト管理
 -- ========================================
 CREATE TABLE IF NOT EXISTS projects (

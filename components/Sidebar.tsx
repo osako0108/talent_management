@@ -13,6 +13,10 @@ import {
   ChevronRight,
   ChevronLeft,
   BookOpen,
+  Briefcase,
+  Award,
+  ToggleLeft,
+  Database,
   Sun,
   Moon,
   Monitor,
@@ -28,6 +32,15 @@ const navItems = [
   { href: "/skills", label: "スキルマトリックス", icon: BarChart3 },
   { href: "/projects", label: "プロジェクト管理", icon: FolderKanban },
   { href: "/strategy", label: "戦略インサイト", icon: Target },
+];
+
+const masterItems = [
+  { href: "/master/departments", label: "部署マスタ", icon: undefined },
+  { href: "/master/roles", label: "役職マスタ", icon: Briefcase },
+  { href: "/master/skills", label: "スキルマスタ", icon: undefined },
+  { href: "/master/grades", label: "グレードマスタ", icon: Award },
+  { href: "/master/statuses", label: "ステータスマスタ", icon: ToggleLeft },
+  { href: "/master/employees", label: "スタッフマスタ", icon: undefined },
 ];
 
 const utilItems = [
@@ -111,6 +124,43 @@ export default function Sidebar() {
               }`}
             >
               <Icon size={18} className="flex-shrink-0" />
+              {!collapsed && <span className="flex-1 whitespace-nowrap">{label}</span>}
+              {!collapsed && active && <ChevronRight size={14} />}
+            </Link>
+          );
+        })}
+
+        {!collapsed && (
+          <div className="pt-3 pb-1 px-3">
+            <div className="flex items-center gap-2 text-xs text-gray-500 font-medium uppercase tracking-wider">
+              <Database size={14} />
+              マスタ管理
+            </div>
+          </div>
+        )}
+        {collapsed && <div className="pt-3" />}
+        {masterItems.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              title={collapsed ? label : undefined}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                collapsed ? "justify-center" : ""
+              } ${
+                active
+                  ? "bg-indigo-600 text-white"
+                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
+              }`}
+            >
+              {Icon ? (
+                <Icon size={18} className="flex-shrink-0" />
+              ) : collapsed ? (
+                <Database size={16} className="flex-shrink-0" />
+              ) : (
+                <span className="w-[18px]" />
+              )}
               {!collapsed && <span className="flex-1 whitespace-nowrap">{label}</span>}
               {!collapsed && active && <ChevronRight size={14} />}
             </Link>
