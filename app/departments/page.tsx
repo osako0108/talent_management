@@ -224,13 +224,18 @@ export default function DepartmentsPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 部署長
               </label>
-              <input
-                type="text"
+              <select
                 value={form.head}
                 onChange={(e) => setForm({ ...form, head: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
-                placeholder="田中 太郎"
-              />
+              >
+                <option value="">未選択</option>
+                {employees.map((emp) => (
+                  <option key={emp.id} value={emp.name}>
+                    {emp.name}（{emp.department || "部署なし"}）
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

@@ -19,8 +19,11 @@ export type Employee = {
   skills: Skill[];
   performance: { year: number; score: number }[];
   projects: string[];
-  status: "active" | "onLeave" | "remote";
+  status: "active" | "training" | "onLeave" | "remote";
   leftDate: string;
+  trainingCompletedAt: string;
+  gender: "male" | "female" | "";
+  avatarIcon: string;
 };
 
 export type Department = {
@@ -118,6 +121,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 92 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "e002",
@@ -145,6 +151,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 89 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "e003",
@@ -171,6 +180,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 87 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "e004",
@@ -197,6 +209,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 88 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "e005",
@@ -223,6 +238,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 85 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   // Sales
   {
@@ -250,6 +268,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 95 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "s002",
@@ -275,6 +296,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 88 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "s003",
@@ -300,6 +324,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 90 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   // Marketing
   {
@@ -327,6 +354,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 91 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "m002",
@@ -352,6 +382,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 85 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   // HR
   {
@@ -379,6 +412,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 92 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "h002",
@@ -404,6 +440,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 81 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   // Finance
   {
@@ -431,6 +470,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 93 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   // Product
   {
@@ -458,6 +500,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 92 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
   {
     id: "p002",
@@ -484,6 +529,9 @@ export const employees: Employee[] = [
       { year: 2024, score: 87 },
     ],
     leftDate: "",
+    trainingCompletedAt: "",
+    gender: "" as const,
+    avatarIcon: "",
   },
 ];
 
@@ -515,12 +563,29 @@ export const gradeLabels: Record<string, string> = {
 
 export const statusLabels: Record<string, string> = {
   active: "在籍",
+  training: "在籍(研修)",
   onLeave: "休職中",
   remote: "リモート",
 };
 
 export const statusColors: Record<string, string> = {
   active: "bg-green-100 text-green-800",
+  training: "bg-indigo-100 text-indigo-800",
   onLeave: "bg-yellow-100 text-yellow-800",
   remote: "bg-blue-100 text-blue-800",
+};
+
+// デフォルトアバターアイコン（SVGパス）
+export const defaultAvatarIcons: Record<string, { label: string; svg: string }> = {
+  male1: { label: "男性A", svg: "M12 2a5 5 0 015 5v1a5 5 0 01-10 0V7a5 5 0 015-5zm-7 18a7 7 0 0114 0v1H5v-1z" },
+  male2: { label: "男性B", svg: "M12 2a5 5 0 015 5v1a5 5 0 01-10 0V7a5 5 0 015-5zm0 14c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4z" },
+  female1: { label: "女性A", svg: "M12 2a5 5 0 015 5v2a5 5 0 01-10 0V7a5 5 0 015-5zm-2 12h4l1 3H9l1-3zm-3 5a7 7 0 0114 0v1H5v-1h2z" },
+  female2: { label: "女性B", svg: "M12 2a5 5 0 015 5v2a5 5 0 01-10 0V7a5 5 0 015-5zm-1 11h2c3 0 7 2 7 5v2H4v-2c0-3 4-5 7-5z" },
+};
+
+export const avatarIconColors: Record<string, { bg: string; fg: string }> = {
+  male1: { bg: "bg-blue-100 dark:bg-blue-900/30", fg: "text-blue-600 dark:text-blue-400" },
+  male2: { bg: "bg-teal-100 dark:bg-teal-900/30", fg: "text-teal-600 dark:text-teal-400" },
+  female1: { bg: "bg-pink-100 dark:bg-pink-900/30", fg: "text-pink-600 dark:text-pink-400" },
+  female2: { bg: "bg-purple-100 dark:bg-purple-900/30", fg: "text-purple-600 dark:text-purple-400" },
 };
