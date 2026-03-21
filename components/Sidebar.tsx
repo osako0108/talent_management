@@ -13,6 +13,8 @@ import {
   ChevronLeft,
   BookOpen,
   Briefcase,
+  Award,
+  ToggleLeft,
   Database,
   Sun,
   Moon,
@@ -34,6 +36,8 @@ const masterItems = [
   { href: "/master/departments", label: "部署マスタ", icon: undefined },
   { href: "/master/roles", label: "役職マスタ", icon: Briefcase },
   { href: "/master/skills", label: "スキルマスタ", icon: undefined },
+  { href: "/master/grades", label: "グレードマスタ", icon: Award },
+  { href: "/master/statuses", label: "ステータスマスタ", icon: ToggleLeft },
   { href: "/master/employees", label: "スタッフマスタ", icon: undefined },
 ];
 
