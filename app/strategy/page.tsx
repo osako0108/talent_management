@@ -45,6 +45,10 @@ export default function StrategyPage() {
   // --- 在籍年数計算 ---
   const today = new Date("2026-03-17");
   const empWithTenure = employees.map((e) => {
+    if (!e.joinDate) {
+      const score2024 = e.performance.find((p) => p.year === 2024)?.score ?? 0;
+      return { ...e, tenureMonths: 0, tenureYears: 0, score2024 };
+    }
     const joinDate = new Date(e.joinDate);
     const months =
       (today.getFullYear() - joinDate.getFullYear()) * 12 +
