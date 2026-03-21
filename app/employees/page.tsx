@@ -15,6 +15,7 @@ const grades = ["J1", "J2", "J3", "S1", "S2", "M1", "M2", "M3", "M4"];
 const gradeOrder = (g: string) => grades.indexOf(g);
 
 const statuses = [
+  { value: "training", label: "在籍(研修)" },
   { value: "active", label: "在籍" },
   { value: "onLeave", label: "休職中" },
   { value: "remote", label: "リモート" },
@@ -30,7 +31,9 @@ const emptyForm = {
   left_date: "",
   email: "",
   avatar: "",
-  status: "active",
+  avatar_icon: "",
+  gender: "" as "" | "male" | "female",
+  status: "training",
   salary: 0,
 };
 
@@ -284,9 +287,26 @@ export default function EmployeesPage() {
       return;
     }
 
+    // 研修→在籍への変更時は確認ダイアログ
+    if (editingId) {
+      const current = employees.find((e) => e.id === editingId);
+      if (current?.status === "training" && form.status === "active") {
+        if (!confirm("研修ステータスを「在籍」に変更します。研修完了として記録されます。よろしいですか？")) return;
+      }
+    }
+
     setSaving(true);
     try {
-      const payload = {
+      // 研修→在籍変更時のタイムスタンプ
+      let trainingCompletedAt: string | null = null;
+      if (editingId) {
+        const current = employees.find((e) => e.id === editingId);
+        if (current?.status === "training" && form.status === "active") {
+          trainingCompletedAt = new Date().toISOString();
+        }
+      }
+
+      const payload: Record<string, unknown> = {
         name: form.name,
         name_kana: form.name_kana,
         role: form.role,
@@ -296,9 +316,14 @@ export default function EmployeesPage() {
         left_date: form.left_date || null,
         email: form.email,
         avatar: form.avatar || form.name.charAt(0) || "?",
+        avatar_icon: form.avatar_icon,
+        gender: form.gender,
         status: form.status,
         salary: form.salary,
       };
+      if (trainingCompletedAt) {
+        payload.training_completed_at = trainingCompletedAt;
+      }
 
       if (editingId) {
         const { error } = await supabase
@@ -363,6 +388,8 @@ export default function EmployeesPage() {
       left_date: emp.leftDate || "",
       email: emp.email ?? "",
       avatar: emp.avatar ?? "",
+      avatar_icon: emp.avatarIcon ?? "",
+      gender: emp.gender ?? "",
       status: emp.status ?? "active",
       salary: 0,
     });
@@ -593,6 +620,59 @@ export default function EmployeesPage() {
                   </button>
                   <p className="text-xs text-gray-400 mt-1">500KB以下のJPG/PNG</p>
                 </div>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                性別
+              </label>
+              <select
+                value={form.gender}
+                onChange={(e) => setForm({ ...form, gender: e.target.value as "" | "male" | "female" })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-100"
+              >
+                <option value="">未設定</option>
+                <option value="male">男性</option>
+                <option value="female">女性</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                デフォルトアイコン（写真がない場合）
+              </label>
+              <div className="flex gap-2">
+                {[
+                  { key: "", label: "名前", color: "bg-gray-100 dark:bg-gray-700" },
+                  { key: "male1", label: "男性A", color: "bg-blue-100 dark:bg-blue-900/30" },
+                  { key: "male2", label: "男性B", color: "bg-teal-100 dark:bg-teal-900/30" },
+                  { key: "female1", label: "女性A", color: "bg-pink-100 dark:bg-pink-900/30" },
+                  { key: "female2", label: "女性B", color: "bg-purple-100 dark:bg-purple-900/30" },
+                ].map(({ key, label, color }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setForm({ ...form, avatar_icon: key })}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-xs transition-all ${color} ${
+                      form.avatar_icon === key
+                        ? "ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-gray-800"
+                        : "hover:ring-1 hover:ring-gray-300"
+                    }`}
+                    title={label}
+                  >
+                    {key === "" ? (
+                      <span className="text-gray-500 font-bold">{form.name?.charAt(0) || "?"}</span>
+                    ) : (
+                      <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+                        <path d={
+                          key === "male1" ? "M12 2a5 5 0 015 5v1a5 5 0 01-10 0V7a5 5 0 015-5zm-7 18a7 7 0 0114 0v1H5v-1z" :
+                          key === "male2" ? "M12 2a5 5 0 015 5v1a5 5 0 01-10 0V7a5 5 0 015-5zm0 14c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4z" :
+                          key === "female1" ? "M12 2a5 5 0 015 5v2a5 5 0 01-10 0V7a5 5 0 015-5zm-2 12h4l1 3H9l1-3zm-3 5a7 7 0 0114 0v1H5v-1h2z" :
+                          "M12 2a5 5 0 015 5v2a5 5 0 01-10 0V7a5 5 0 015-5zm-1 11h2c3 0 7 2 7 5v2H4v-2c0-3 4-5 7-5z"
+                        } />
+                      </svg>
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

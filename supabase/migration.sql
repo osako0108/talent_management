@@ -49,7 +49,10 @@ CREATE TABLE employees (
   join_date DATE,
   email TEXT NOT NULL DEFAULT '',
   avatar TEXT NOT NULL DEFAULT '',
-  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'onLeave', 'remote')),
+  avatar_icon TEXT NOT NULL DEFAULT '',
+  gender TEXT NOT NULL DEFAULT '' CHECK (gender IN ('', 'male', 'female')),
+  status TEXT NOT NULL DEFAULT 'training' CHECK (status IN ('active', 'training', 'onLeave', 'remote')),
+  training_completed_at TIMESTAMPTZ,
   salary BIGINT NOT NULL DEFAULT 0,
   left_date DATE,
   created_at TIMESTAMPTZ DEFAULT now(),
@@ -85,6 +88,17 @@ CREATE TABLE employee_projects (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   employee_id UUID NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
   project_name TEXT NOT NULL
+);
+
+-- ========================================
+-- 従業員経歴コメント（前職・経歴記録）
+-- ========================================
+CREATE TABLE employee_career_history (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  employee_id UUID NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+  summary TEXT NOT NULL DEFAULT '' CHECK (char_length(summary) <= 20),
+  detail TEXT NOT NULL DEFAULT '' CHECK (char_length(detail) <= 200),
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ========================================
@@ -126,6 +140,7 @@ ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
 ALTER TABLE employee_skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE employee_performance ENABLE ROW LEVEL SECURITY;
 ALTER TABLE employee_projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE employee_career_history ENABLE ROW LEVEL SECURITY;
 
 -- anon/authenticated 全ユーザーに CRUD を許可
 CREATE POLICY "Allow all on departments" ON departments FOR ALL USING (true) WITH CHECK (true);
@@ -135,6 +150,7 @@ CREATE POLICY "Allow all on employees" ON employees FOR ALL USING (true) WITH CH
 CREATE POLICY "Allow all on employee_skills" ON employee_skills FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all on employee_performance" ON employee_performance FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all on employee_projects" ON employee_projects FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on employee_career_history" ON employee_career_history FOR ALL USING (true) WITH CHECK (true);
 
 -- ========================================
 -- 初期データ（スキルカテゴリ）
