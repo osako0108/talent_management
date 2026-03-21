@@ -476,7 +476,7 @@ export default function ProjectsPage() {
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-sm text-red-700 dark:text-red-300 flex justify-between items-center">
           <span>{error}</span>
-          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
+          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700 dark:hover:text-red-400">
             <X size={16} />
           </button>
         </div>
@@ -669,7 +669,7 @@ export default function ProjectsPage() {
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }}
-                        className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500"
+                        className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -731,7 +731,7 @@ export default function ProjectsPage() {
                             {d.department_name}
                             <button
                               onClick={() => removeDept(d.id)}
-                              className="ml-0.5 text-blue-400 hover:text-blue-600"
+                              className="ml-0.5 text-blue-400 hover:text-blue-600 dark:hover:text-blue-300"
                             >
                               <X size={12} />
                             </button>
@@ -801,7 +801,7 @@ export default function ProjectsPage() {
                               )}
                               <span className="text-xs text-gray-400">{m.department_name}</span>
                             </div>
-                            <button onClick={() => removeMember(m.id)} className="text-gray-400 hover:text-red-500">
+                            <button onClick={() => removeMember(m.id)} className="text-gray-400 hover:text-red-500 dark:hover:text-red-400">
                               <X size={14} />
                             </button>
                           </div>
@@ -870,7 +870,7 @@ export default function ProjectsPage() {
                             {s.skill_name} Lv.{s.required_level}
                             <button
                               onClick={() => removeSkill(s.id)}
-                              className="ml-0.5 text-purple-400 hover:text-purple-600"
+                              className="ml-0.5 text-purple-400 hover:text-purple-600 dark:hover:text-purple-300"
                             >
                               <X size={12} />
                             </button>
@@ -934,7 +934,7 @@ export default function ProjectsPage() {
                           >
                             <button
                               onClick={() => toggleMilestone(ms)}
-                              className={`flex-shrink-0 ${ms.completed ? "text-green-500" : "text-gray-300 dark:text-gray-600 hover:text-gray-500"}`}
+                              className={`flex-shrink-0 ${ms.completed ? "text-green-500" : "text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400"}`}
                             >
                               {ms.completed ? <CheckCircle2 size={18} /> : <Circle size={18} />}
                             </button>

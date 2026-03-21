@@ -170,7 +170,7 @@ export default function StrategyPage() {
       {/* KPI Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <InsightCard
-          icon={<TrendingUp size={18} className="text-indigo-600" />}
+          icon={<TrendingUp size={18} className="text-indigo-600 dark:text-indigo-400" />}
           bg="bg-indigo-50 dark:bg-indigo-900/30"
           title="全社平均評価 (2024)"
           value={`${(employees.reduce((s, e) => s + (e.performance.find((p) => p.year === 2024)?.score ?? 0), 0) / employees.length).toFixed(1)}点`}
